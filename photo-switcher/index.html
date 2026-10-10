@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Studio — Email Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lato', Arial, sans-serif; background: #f0f0f0; color: #222; }
+.top-bar { background: #222; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+.top-bar .brand { font-family: Georgia, serif; font-size: 18px; color: #fff; }
+.top-bar .brand span { color: #c9a84c; }
+.top-bar .tagline { font-size: 11px; color: #666; letter-spacing: 0.1em; text-transform: uppercase; } .top-bar a { font-size: 11px; color: #888; text-decoration: none; } .top-bar a:hover { color: #c9a84c; }
+.auth-bar { background: #fff; border-bottom: 1px solid #ddd; padding: 10px 28px; display: flex; align-items: center; justify-content: space-between; }
+.auth-status { font-size: 12px; color: #888; }
+.auth-status strong { color: #222; }
+.auth-btn { font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700; padding: 7px 16px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 3px; color: #444; letter-spacing: 0.04em; transition: all 0.15s; }
+.auth-btn:hover { background: #f5f5f5; }
+.auth-btn.connected { background: #222; color: #fff; border-color: #222; }
+.layout { display: flex; height: calc(100vh - 98px); } @media (max-width: 700px) { .layout { flex-direction: column; height: auto; } .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; } .preview-pane { padding: 16px; } }
+.sidebar { width: 340px; flex-shrink: 0; background: #fff; border-right: 1px solid #ddd; overflow-y: auto; padding: 20px; }
+.preview-pane { flex: 1; overflow-y: auto; padding: 24px; background: #f0f0f0; }
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+.service-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.stab { font-size: 11px; font-weight: 700; padding: 6px 12px; border: 1px solid #ddd; background: #fff; cursor: pointer; border-radius: 3px; color: #888; transition: all 0.15s; font-family: 'Lato', sans-serif; }
+.stab.active { background: #222; color: #fff; border-color: #222; }
+.photo-slot { margin-bottom: 14px; }
+.photo-slot label { font-size: 11px; font-weight: 700; color: #555; display: block; margin-bottom: 5px; letter-spacing: 0.04em; }
+.photo-slot .thumb-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.thumb { width: 60px; height: 40px; object-fit: cover; border: 1px solid #ddd; border-radius: 2px; background: #eee; flex-shrink: 0; }
+.photo-slot input, .detail-input { width: 100%; font-size: 12px; padding: 7px 9px; border: 1px solid #ddd; border-radius: 3px; font-family: 'Lato', sans-serif; color: #444; }
+.photo-slot input:focus, .detail-input:focus { outline: none; border-color: #c9a84c; }
+.divider { height: 1px; background: #eee; margin: 16px 0; }
+.save-btn { width: 100%; background: #222; color: #fff; border: none; padding: 13px; font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; border-radius: 3px; margin-top: 6px; transition: background 0.15s; }
+.save-btn:hover:not(:disabled) { background: #444; }
+.save-btn:disabled { background: #aaa; cursor: not-allowed; }
+.save-btn.success { background: #3a7a3a; }
+.note { font-size: 11px; color: #999; line-height: 1.6; margin-top: 10px; }
+.note strong { color: #666; }
+.status-msg { font-size: 12px; margin-top: 8px; display: none; padding: 8px 10px; border-radius: 3px; }
+.status-msg.ok { background: #eefaea; color: #2a6a2a; border: 1px solid #b0d8b0; }
+.status-msg.err { background: #faeaea; color: #8a2a2a; border: 1px solid #d8b0b0; }
+
+/* Email preview */
+.email-outer { max-width: 620px; margin: 0 auto; }
+.email-card { background: #fff; border: 1px solid #ddd; font-family: Arial, sans-serif; }
+.email-header { background: #fff; padding: 14px 24px; border-bottom: 2px solid #222; display: flex; align-items: center; justify-content: space-between; }
+.email-logo { font-family: Georgia, serif; font-size: 16px; color: #222; }
+.email-logo span { color: #c9a84c; font-style: italic; }
+.email-logo-sub { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #aaa; }
+.email-hdr-right { text-align: right; font-size: 10px; color: #888; line-height: 1.9; }
+.email-hdr-right a { color: #222; font-weight: bold; text-decoration: none; }
+.email-hero { background: #222; padding: 18px 24px; }
+.email-pill { font-size: 9px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; color: #c9a84c; margin-bottom: 6px; }
+.email-subject { font-family: Georgia, serif; font-size: 18px; color: #fff; line-height: 1.35; }
+.email-body { padding: 20px 24px; }
+.greeting { font-size: 14px; color: #222; margin-bottom: 10px; }
+.body-text { font-size: 13px; line-height: 1.8; color: #555; margin-bottom: 12px; }
+.highlight { border-left: 3px solid #c9a84c; background: #fafaf8; padding: 12px 14px; margin: 14px 0; font-size: 13px; line-height: 1.7; color: #555; }
+.quote-table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+.quote-table td { padding: 8px 0; font-size: 12px; border-bottom: 1px solid #eee; }
+.quote-table tr:last-child td { border-bottom: none; }
+.qt-label { color: #777; } .qt-value { text-align: right; font-weight: bold; color: #222; }
+.badge { background: #222; color: #c9a84c; font-size: 9px; font-weight: bold; padding: 2px 7px; letter-spacing: 0.06em; text-transform: uppercase; margin-left: 6px; }
+.urgency { background: #fdf8ee; border: 1px solid #e8d9a0; padding: 10px 12px; display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+.urgency-icon { width: 26px; height: 26px; background: #c9a84c; text-align: center; line-height: 26px; flex-shrink: 0; color: #fff; font-size: 13px; }
+.urgency-text strong { font-size: 11px; color: #222; display: block; }
+.urgency-text span { font-size: 10px; color: #7a6020; }
+.divider-rule { width: 40px; height: 2px; background: #222; margin: 16px 0; }
+.port-label { font-size: 9px; font-weight: bold; letter-spacing: 0.14em; text-transform: uppercase; color: #aaa; margin-bottom: 8px; }
+.port-label a { color: #c9a84c; text-decoration: none; }
+.photo-grid { display: flex; gap: 4px; margin-bottom: 4px; }
+.photo-grid img { flex: 1; width: 0; min-width: 0; aspect-ratio: 1/1; object-fit: cover; display: block; background: #ddd; }
+.testi { border-top: 2px solid #222; background: #f7f7f5; padding: 14px 16px; margin: 14px 0; }
+.stars { color: #c9a84c; font-size: 12px; letter-spacing: 2px; margin-bottom: 6px; }
+.testi-text { font-family: Georgia, serif; font-size: 13px; color: #444; line-height: 1.6; font-style: italic; margin-bottom: 6px; }
+.testi-credit { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.1em; font-weight: bold; }
+.cta-section { text-align: center; padding: 14px 0 8px; }
+.cta-btn { display: inline-block; background: #222; color: #fff; font-size: 10px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; padding: 11px 26px; text-decoration: none; }
+.cta-sub { font-size: 10px; color: #aaa; margin-top: 8px; }
+.cta-sub a { color: #888; text-decoration: none; }
+.email-footer { background: #222; padding: 16px 24px; }
+.footer-name { font-family: Georgia, serif; font-size: 16px; color: #fff; margin-bottom: 2px; }
+.footer-role { font-size: 9px; color: #666; letter-spacing: 0.12em; text-transform: uppercase; font-weight: bold; margin-bottom: 12px; }
+.footer-divider { height: 1px; background: #333; margin-bottom: 12px; }
+.footer-cols { display: flex; gap: 16px; }
+.footer-col { flex: 1; font-size: 10px; color: #666; line-height: 1.9; }
+.footer-col strong { color: #888; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; display: block; }
+.footer-col a { color: #c9a84c; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <div class="brand">Image <span>&</span> Light</div>
+    <div class="tagline">Email Template Tool</div>
+  </div>
+  <a href="https://example.com/privacy-policy/" target="_blank" style="font-size:12px;color:#c9a84c;text-decoration:underline;font-weight:bold;">Privacy Policy</a>
+</div>
+
+<!-- Auth bar -->
+<div class="auth-bar">
+  <div class="auth-status" id="authStatus">Not connected to Gmail</div>
+  <button class="auth-btn" id="authBtn" onclick="handleAuth()">Connect Gmail</button>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+
+    <div class="section-label">1. Choose service</div>
+    <div class="service-tabs">
+      <button class="stab active" onclick="setService('product', this)">Product</button>
+      <button class="stab" onclick="setService('food', this)">Food</button>
+      <button class="stab" onclick="setService('property', this)">Property</button>
+    </div>
+
+    <div class="section-label">2. Swap photos (optional)</div>
+    <div class="photo-slot">
+      <label>Photo 1</label>
+      <div class="thumb-row">
+        <img class="thumb" id="thumb0" src="" />
+        <input type="text" id="url0" oninput="updatePhoto(0)" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="photo-slot">
+      <label>Photo 2</label>
+      <div class="thumb-row">
+        <img class="thumb" id="thumb1" src="" />
+        <input type="text" id="url1" oninput="updatePhoto(1)" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="photo-slot">
+      <label>Photo 3</label>
+      <div class="thumb-row">
+        <img class="thumb" id="thumb2" src="" />
+        <input type="text" id="url2" oninput="updatePhoto(2)" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="photo-slot">
+      <label>Photo 4</label>
+      <div class="thumb-row">
+        <img class="thumb" id="thumb3" src="" />
+        <input type="text" id="url3" oninput="updatePhoto(3)" placeholder="https://..." />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-label">3. Fill in the details</div>
+    <div class="photo-slot">
+      <label>Recipient first name</label>
+      <input class="detail-input" type="text" id="firstName" placeholder="e.g. Liam" />
+    </div>
+    <div class="photo-slot">
+      <label>Recipient email</label>
+      <input class="detail-input" type="text" id="recipientEmail" placeholder="e.g. liam@example.com" />
+    </div>
+    <div class="photo-slot">
+      <label>Brief (what they asked for)</label>
+      <input class="detail-input" type="text" id="briefText" placeholder="e.g. 20 product shots, white background" />
+    </div>
+    <div class="photo-slot" style="display:flex;gap:8px;">
+      <div style="flex:1">
+        <label>Quote amount (£)</label>
+        <input class="detail-input" type="text" id="quoteAmount" placeholder="e.g. 350" />
+      </div>
+      <div style="flex:1">
+        <label>Confirm by date</label>
+        <input class="detail-input" type="text" id="confirmDate" placeholder="e.g. 10 Apr" />
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-label">4. Save to Gmail drafts</div>
+    <button class="save-btn" id="saveBtn" onclick="saveToDraft()" disabled>Connect Gmail first</button>
+    <div class="status-msg" id="statusMsg"></div>
+    <p class="note" style="margin-top:10px;">Saves directly into <strong>your Gmail drafts</strong>. Connect your Gmail account above first.</p>
+
+  </div>
+
+  <div class="preview-pane">
+    <div class="email-outer">
+      <div class="email-card">
+        <div class="email-header">
+          <div>
+            <div class="email-logo">Image <span>&</span> Light</div>
+            <div class="email-logo-sub">Commercial Photography</div>
+          </div>
+          <div class="email-hdr-right">
+            <a href="https://example.com">example.com</a><br>
+            01234 567 890<br>Anytown
+          </div>
+        </div>
+        <div class="email-hero">
+          <div class="email-pill" id="previewPill">Product Photography</div>
+          <div class="email-subject" id="previewSubject">Thanks for getting in touch, [First Name]</div>
+        </div>
+        <div class="email-body">
+          <p class="greeting" id="previewGreeting">Hi [First Name],</p>
+          <p class="body-text" id="previewOpener">Thanks so much for your enquiry — product photography is one of my favourite things to work on.</p>
+          <div class="highlight">Based on what you've described: <strong id="previewBrief">[brief]</strong>. I've put together a quote below, but happy to adapt this to suit your needs.</div>
+          <table class="quote-table">
+            <tr><td class="qt-label" id="previewServiceRow">Product shoot — [X items]</td><td class="qt-value" id="previewAmt">£[amount]</td></tr>
+            <tr><td class="qt-label">Professional editing included</td><td class="qt-value">Yes</td></tr>
+            <tr><td class="qt-label">Image delivery</td><td class="qt-value" id="previewDelivery">Within 48 hours</td></tr>
+            <tr><td class="qt-label"><strong>Total</strong></td><td class="qt-value"><strong id="previewTotal">£[amount]</strong><span class="badge">10% off this week</span></td></tr>
+          </table>
+          <div class="urgency">
+            <div class="urgency-icon">&#9719;</div>
+            <div class="urgency-text">
+              <strong id="previewUrgency">Confirm by [date] and save 10%</strong>
+              <span>This offer applies to bookings confirmed within 7 days of receiving this quote.</span>
+            </div>
+          </div>
+          <div class="divider-rule"></div>
+          <div class="port-label">Examples of my work — <a href="#" id="previewPortLink">view full portfolio</a></div>
+          <div class="photo-grid">
+            <img id="prev0" src="" onerror="this.style.background='#ddd'" />
+            <img id="prev1" src="" onerror="this.style.background='#ddd'" />
+            <img id="prev2" src="" onerror="this.style.background='#ddd'" />
+            <img id="prev3" src="" onerror="this.style.background='#ddd'" />
+          </div>
+          <div class="testi">
+            <div class="stars">★★★★★</div>
+            <div class="testi-text" id="previewTesti"></div>
+            <div class="testi-credit" id="previewCredit"></div>
+          </div>
+          <p class="body-text">I have some availability coming up over the next couple of weeks — it would be great to get something in the diary. Would you like to go ahead, or is there anything you'd like to talk through first?</p>
+          <div class="cta-section">
+            <a href="#" class="cta-btn">GET IN TOUCH</a>
+            <p class="cta-sub"><a href="#">example.com</a> &middot; 01234 567 890 &middot; <a href="#">WhatsApp</a></p>
+          </div>
+        </div>
+        <div class="email-footer">
+          <div class="footer-name">Your Name</div>
+          <div class="footer-role">Commercial Photographer — Your Studio</div>
+          <div class="footer-divider"></div>
+          <div class="footer-cols">
+            <div class="footer-col"><strong>Studio</strong>1 Example Street<br>Anytown AB1 2CD</div>
+            <div class="footer-col"><strong>Contact</strong><a href="#">example.com</a><br>01234 567 890 &middot; 01234 567 891<br><a href="#">Chat on WhatsApp</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Google OAuth config ──────────────────────────────────────────────────────
+// Uses Google Identity Services (no server needed)
+// Scopes: gmail.compose allows creating drafts only, nothing else
+const CLIENT_ID = 'YOUR_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+const SCOPE = 'https://www.googleapis.com/auth/gmail.compose';
+let accessToken = null;
+let tokenClient = null;
+
+// ── Services data ────────────────────────────────────────────────────────────
+const SERVICES = {
+  product: {
+    pill: 'Product Photography',
+    opener: "Thanks so much for your enquiry — product photography is one of my favourite things to work on. I'd love to help you get images that really show off your products at their best.",
+    serviceRow: 'Product shoot — [X items, background colour]',
+    delivery: 'Within 48 hours',
+    testi: 'Your Studio produced fantastic results for our product range. Fast turnaround, professional throughout and the images look brilliant.',
+    credit: 'Product Photography Client',
+    portUrl: 'https://example.com/product-photography',
+    imgs: [
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+    ]
+  },
+  food: {
+    pill: 'Food Photography',
+    opener: "Thanks so much for your enquiry — food photography is a real passion of mine and I'd love to help you capture your dishes at their very best.",
+    serviceRow: 'Food shoot — [half day / full day / number of dishes]',
+    delivery: 'Within 48 hours',
+    testi: "We were delighted with how well the shoot captured our dishes. The images have made a real difference to our menus and social media.",
+    credit: 'Food Photography Client',
+    portUrl: 'https://example.com/food-photography',
+    imgs: [
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+    ]
+  },
+  property: {
+    pill: 'Property Photography',
+    opener: "Thanks for getting in touch — I work with estate agents, landlords and Airbnb hosts across your area regularly. I know how important fast turnarounds and quality images are, and I'd love to help.",
+    serviceRow: 'Property shoot — [property type + any add-ons e.g. floor plan / virtual tour]',
+    delivery: 'Within 24 hours',
+    testi: 'Always professional, prompt and polite. They turn things around quickly which is useful in our business.',
+    credit: 'Property Client, Example Estates',
+    portUrl: 'https://example.com/property-photography',
+    imgs: [
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+      'https://example.com/images/placeholder.webp',
+    ]
+  }
+};
+
+let currentService = 'product';
+let currentImgs = [...SERVICES.product.imgs];
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function initGoogleAuth() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPE,
+    callback: (resp) => {
+      if (resp.error) { showStatus('Google sign-in failed: ' + resp.error, true); return; }
+      accessToken = resp.access_token;
+      // Get user info to display name
+      fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: 'Bearer ' + accessToken }
+      }).then(r => r.json()).then(info => {
+        document.getElementById('authStatus').innerHTML = 'Connected as <strong>' + (info.email || 'Gmail user') + '</strong>';
+        document.getElementById('authBtn').textContent = 'Disconnect';
+        document.getElementById('authBtn').classList.add('connected');
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('saveBtn').textContent = 'Save to Gmail draft';
+      });
+    }
+  });
+}
+
+function handleAuth() {
+  if (accessToken) {
+    // Disconnect
+    google.accounts.oauth2.revoke(accessToken, () => {
+      accessToken = null;
+      document.getElementById('authStatus').textContent = 'Not connected to Gmail';
+      document.getElementById('authBtn').textContent = 'Connect Gmail';
+      document.getElementById('authBtn').classList.remove('connected');
+      document.getElementById('saveBtn').disabled = true;
+      document.getElementById('saveBtn').textContent = 'Connect Gmail first';
+    });
+  } else {
+    tokenClient.requestAccessToken();
+  }
+}
+
+// ── Service / photo logic ─────────────────────────────────────────────────────
+function setService(key, btn) {
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentService = key;
+  const s = SERVICES[key];
+  currentImgs = [...s.imgs];
+  document.getElementById('previewPill').textContent = s.pill;
+  document.getElementById('previewOpener').textContent = s.opener;
+  document.getElementById('previewServiceRow').textContent = s.serviceRow;
+  document.getElementById('previewDelivery').textContent = s.delivery;
+  document.getElementById('previewTesti').textContent = '\u201c' + s.testi + '\u201d';
+  document.getElementById('previewCredit').textContent = s.credit;
+  document.getElementById('previewPortLink').href = s.portUrl;
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('url' + i).value = s.imgs[i];
+    document.getElementById('thumb' + i).src = s.imgs[i];
+    document.getElementById('prev' + i).src = s.imgs[i];
+  }
+}
+
+function updatePhoto(idx) {
+  const url = document.getElementById('url' + idx).value.trim();
+  currentImgs[idx] = url;
+  document.getElementById('thumb' + idx).src = url;
+  document.getElementById('prev' + idx).src = url;
+}
+
+// Live preview updates
+['firstName','briefText','quoteAmount','confirmDate'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updatePreview);
+});
+
+function updatePreview() {
+  const name = document.getElementById('firstName').value.trim() || '[First Name]';
+  const brief = document.getElementById('briefText').value.trim() || '[brief]';
+  const amt = document.getElementById('quoteAmount').value.trim() || '[amount]';
+  const date = document.getElementById('confirmDate').value.trim() || '[date]';
+  document.getElementById('previewSubject').textContent = 'Thanks for getting in touch, ' + name;
+  document.getElementById('previewGreeting').textContent = 'Hi ' + name + ',';
+  document.getElementById('previewBrief').textContent = brief;
+  document.getElementById('previewAmt').textContent = '\u00a3' + amt;
+  document.getElementById('previewTotal').textContent = '\u00a3' + amt;
+  document.getElementById('previewUrgency').textContent = 'Confirm by ' + date + ' and save 10%';
+}
+
+// ── Build email HTML ──────────────────────────────────────────────────────────
+function buildEmailHTML() {
+  const s = SERVICES[currentService];
+  const imgs = currentImgs;
+  const firstName = document.getElementById('firstName').value.trim() || '[First Name]';
+  const brief = document.getElementById('briefText').value.trim() || s.serviceRow;
+  const amount = document.getElementById('quoteAmount').value.trim() || '[amount]';
+  const confirmDate = document.getElementById('confirmDate').value.trim() || '[date \u2014 7 days from today]';
+  const LOGO = 'https://example.com/images/placeholder.webp';
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+@media only screen and (max-width:480px){
+  table[width="620"]{width:100%!important;}
+  td[width="25%"]{width:50%!important;display:inline-block!important;padding-bottom:4px!important;}
+  img{max-width:100%!important;height:auto!important;}
+}
+</style></head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:24px 0;">
+<tr><td align="center">
+<table width="620" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #ddd;">
+<tr><td style="background:#fff;padding:16px 28px;border-bottom:2px solid #222;">
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td><img src="${LOGO}" alt="Your Studio Photography" style="height:44px;width:auto;display:block;" /></td>
+    <td align="right" style="font-family:Arial,sans-serif;font-size:11px;color:#888;line-height:1.9;">
+      <a href="https://example.com" style="color:#222;text-decoration:none;font-weight:bold;">example.com</a><br>01234 567 890<br>Anytown
+    </td>
+  </tr></table>
+</td></tr>
+<tr><td style="background:#222;padding:22px 28px;">
+  <div style="font-size:10px;font-weight:bold;letter-spacing:0.2em;text-transform:uppercase;color:#c9a84c;margin-bottom:8px;">${s.pill}</div>
+  <div style="font-family:Georgia,serif;font-size:22px;color:#fff;line-height:1.35;">Thanks for getting in touch, ${firstName}</div>
+</td></tr>
+<tr><td style="background:#fff;padding:24px 28px;font-family:Arial,sans-serif;">
+  <p style="font-size:15px;color:#222;margin:0 0 12px;">Hi ${firstName},</p>
+  <p style="font-size:14px;line-height:1.8;color:#555;margin:0 0 14px;">${s.opener}</p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;">
+    <tr><td style="border-left:3px solid #c9a84c;background:#fafaf8;padding:14px 16px;font-size:14px;line-height:1.75;color:#555;">
+      Based on what you've described: <strong style="color:#222;">${brief}</strong>. I've put together a quote below, but happy to adapt this to suit your needs.
+    </td></tr>
+  </table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;border-collapse:collapse;">
+    <tr><td style="font-size:13px;color:#777;padding:10px 0;border-bottom:1px solid #eee;">${s.serviceRow}</td><td style="font-size:13px;font-weight:bold;color:#222;text-align:right;padding:10px 0;border-bottom:1px solid #eee;">&pound;${amount}</td></tr>
+    <tr><td style="font-size:13px;color:#777;padding:10px 0;border-bottom:1px solid #eee;">Professional editing included</td><td style="font-size:13px;font-weight:bold;color:#222;text-align:right;padding:10px 0;border-bottom:1px solid #eee;">Yes</td></tr>
+    <tr><td style="font-size:13px;color:#777;padding:10px 0;border-bottom:1px solid #eee;">Image delivery</td><td style="font-size:13px;font-weight:bold;color:#222;text-align:right;padding:10px 0;border-bottom:1px solid #eee;">${s.delivery}</td></tr>
+    <tr><td style="font-size:14px;color:#222;font-weight:bold;padding:10px 0;"><strong>Total</strong></td><td style="font-size:14px;font-weight:bold;color:#222;text-align:right;padding:10px 0;"><strong>&pound;${amount}</strong> <span style="background:#222;color:#c9a84c;font-size:10px;font-weight:bold;padding:3px 9px;letter-spacing:0.06em;text-transform:uppercase;margin-left:8px;">10% off this week</span></td></tr>
+  </table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#fdf8ee;border:1px solid #e8d9a0;">
+    <tr>
+      <td style="padding:12px 16px;width:46px;"><div style="width:32px;height:32px;background:#c9a84c;text-align:center;line-height:32px;"><span style="color:#fff;font-size:16px;">&#9719;</span></div></td>
+      <td style="padding:12px 16px 12px 0;"><strong style="font-size:13px;color:#222;display:block;margin-bottom:2px;">Confirm by ${confirmDate} and save 10%</strong><span style="font-size:12px;color:#7a6020;">This offer applies to any booking confirmed within 7 days of receiving this quote.</span></td>
+    </tr>
+  </table>
+  <div style="width:40px;height:2px;background:#222;margin:20px 0;"></div>
+  <p style="font-size:10px;font-weight:bold;letter-spacing:0.16em;text-transform:uppercase;color:#aaa;margin:0 0 10px;">Examples of my work &mdash; <a href="${s.portUrl}" style="color:#c9a84c;text-decoration:none;">view full portfolio</a></p>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0 6px;"><tr>
+    <td width="25%" style="padding-right:4px;"><a href="${s.portUrl}"><img src="${imgs[0]}" width="130" height="130" style="display:block;width:130px;height:130px;object-fit:cover;" alt="" /></a></td>
+    <td width="25%" style="padding-right:4px;"><a href="${s.portUrl}"><img src="${imgs[1]}" width="130" height="130" style="display:block;width:130px;height:130px;object-fit:cover;" alt="" /></a></td>
+    <td width="25%" style="padding-right:4px;"><a href="${s.portUrl}"><img src="${imgs[2]}" width="130" height="130" style="display:block;width:130px;height:130px;object-fit:cover;" alt="" /></a></td>
+    <td width="25%"><a href="${s.portUrl}"><img src="${imgs[3]}" width="130" height="130" style="display:block;width:130px;height:130px;object-fit:cover;" alt="" /></a></td>
+  </tr></table>
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0;border-top:2px solid #222;background:#f7f7f5;">
+    <tr><td style="padding:16px 18px;">
+      <div style="color:#c9a84c;font-size:14px;letter-spacing:3px;margin-bottom:8px;">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
+      <div style="font-family:Georgia,serif;font-size:15px;color:#444;line-height:1.65;font-style:italic;margin-bottom:8px;">&ldquo;${s.testi}&rdquo;</div>
+      <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.1em;font-weight:bold;">${s.credit}</div>
+    </td></tr>
+  </table>
+  <p style="font-size:14px;line-height:1.8;color:#555;margin:0 0 20px;">I have some availability coming up over the next couple of weeks &mdash; it would be great to get something in the diary. Would you like to go ahead, or is there anything you'd like to talk through first?</p>
+  <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 16px;">
+    <a href="https://example.com/contact-us" style="background:#222;color:#fff;font-family:Arial,sans-serif;font-size:11px;font-weight:bold;letter-spacing:0.2em;text-transform:uppercase;padding:13px 32px;text-decoration:none;display:inline-block;">GET IN TOUCH</a>
+    <p style="font-size:11px;color:#aaa;margin:10px 0 0;"><a href="https://example.com" style="color:#888;text-decoration:none;">example.com</a> &nbsp;&middot;&nbsp; 01234 567 890 &nbsp;&middot;&nbsp; <a href="https://wa.me/441234567890" style="color:#888;text-decoration:none;">WhatsApp</a></p>
+  </td></tr></table>
+</td></tr>
+<tr><td style="background:#222;padding:20px 28px;">
+  <div style="font-family:Georgia,serif;font-size:18px;color:#fff;margin-bottom:3px;">Your Name</div>
+  <div style="font-size:10px;color:#666;letter-spacing:0.14em;text-transform:uppercase;font-weight:bold;margin-bottom:14px;">Commercial Photographer &mdash; Your Studio</div>
+  <div style="height:1px;background:#333;margin-bottom:14px;"></div>
+  <table width="100%" cellpadding="0" cellspacing="0"><tr>
+    <td width="50%" style="font-size:11px;color:#666;line-height:1.9;vertical-align:top;"><strong style="color:#888;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;">Studio</strong><br>1 Example Street<br>Anytown AB1 2CD</td>
+    <td width="50%" style="font-size:11px;color:#666;line-height:1.9;vertical-align:top;"><strong style="color:#888;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;">Contact</strong><br><a href="https://example.com" style="color:#c9a84c;text-decoration:none;">example.com</a><br>01234 567 890 &nbsp;&middot;&nbsp; 01234 567 891<br><a href="https://wa.me/441234567890" style="color:#c9a84c;text-decoration:none;">Chat on WhatsApp</a></td>
+  </tr></table>
+</td></tr>
+</table></td></tr></table>
+</body></html>`;
+}
+
+// ── Build plain text version ─────────────────────────────────────────────────
+function buildPlainText() {
+  const s = SERVICES[currentService];
+  const firstName = document.getElementById('firstName').value.trim() || '[First Name]';
+  const brief = document.getElementById('briefText').value.trim() || s.serviceRow;
+  const amount = document.getElementById('quoteAmount').value.trim() || '[amount]';
+  const confirmDate = document.getElementById('confirmDate').value.trim() || '[date]';
+
+  return `Hi ${firstName},
+
+${s.opener}
+
+Based on what you've described: ${brief}. I've put together a quote below, but happy to adapt this to suit your needs.
+
+QUOTE
+-----
+${s.serviceRow}: £${amount}
+Professional editing included: Yes
+Image delivery: ${s.delivery}
+Total: £${amount}
+
+Confirm by ${confirmDate} and save 10% — this offer applies to any booking confirmed within 7 days of receiving this quote.
+
+You can view examples of my work here: ${s.portUrl}
+
+${s.testi}
+— ${s.credit}
+
+I have some availability coming up over the next couple of weeks — it would be great to get something in the diary. Would you like to go ahead, or is there anything you'd like to talk through first?
+
+Best wishes,
+Your Name
+Your Studio Photography
+example.com
+01234 567 890 | 01234 567 891
+WhatsApp: https://wa.me/441234567890
+1 Example Street, Anytown AB1 2CD`;
+}
+
+// ── Save to Gmail draft via API ───────────────────────────────────────────────
+async function saveToDraft() {
+  const recipient = document.getElementById('recipientEmail').value.trim();
+  if (!recipient) { showStatus('Please enter the recipient email address.', true); return; }
+  if (!accessToken) { showStatus('Please connect your Gmail account first.', true); return; }
+
+  const s = SERVICES[currentService];
+  const subject = 'Re: ' + s.pill + ' Enquiry - Your Studio';
+  const bodyHtml = buildEmailHTML();
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  hideStatus();
+
+  // Build RFC 2822 multipart/alternative message (plain text + HTML)
+  const boundary = 'boundary_' + Date.now();
+  const plainText = buildPlainText();
+  const message = [
+    'To: ' + recipient,
+    'CC: cc@example.com',
+    'Subject: ' + subject,
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+    '',
+    '--' + boundary,
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: quoted-printable',
+    '',
+    plainText,
+    '',
+    '--' + boundary,
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: quoted-printable',
+    '',
+    bodyHtml,
+    '',
+    '--' + boundary + '--'
+  ].join('\r\n');
+
+  // Base64url encode
+  const encoded = btoa(unescape(encodeURIComponent(message)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  try {
+    const resp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + accessToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: { raw: encoded } })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || resp.statusText);
+    }
+
+    btn.textContent = 'Saved!';
+    btn.classList.add('success');
+    showStatus('Draft saved to your Gmail drafts. Open Gmail to review and send.', false);
+    setTimeout(() => {
+      btn.textContent = 'Save to Gmail draft';
+      btn.classList.remove('success');
+      btn.disabled = false;
+    }, 3000);
+
+  } catch(e) {
+    showStatus('Error: ' + e.message, true);
+    btn.textContent = 'Save to Gmail draft';
+    btn.disabled = false;
+  }
+}
+
+function showStatus(msg, isErr) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + (isErr ? 'err' : 'ok');
+  el.style.display = 'block';
+}
+function hideStatus() {
+  document.getElementById('statusMsg').style.display = 'none';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+setService('product', document.querySelector('.stab.active'));
+
+window.onload = function() {
+  if (typeof google !== 'undefined') initGoogleAuth();
+};
+</script>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" onload="initGoogleAuth()" async defer></script>
+
+<div style="text-align:center;padding:16px;background:#fff;border-top:1px solid #ddd;font-family:Arial,sans-serif;">
+  <a href="https://example.com/privacy-policy/" target="_blank" style="font-size:13px;color:#222;text-decoration:underline;font-weight:bold;">Privacy Policy</a>
+  <span style="font-size:13px;color:#aaa;margin:0 10px;">|</span>
+  <span style="font-size:13px;color:#aaa;">This tool is operated by Marketing 3:17</span>
+</div>
+</body>
+</html>

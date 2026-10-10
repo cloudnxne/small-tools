@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Home Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F7F2EB;}
+#hl-root{min-height:100vh;}
+.hl{min-height:100vh;background:#F7F2EB;font-family:'DM Sans',sans-serif;color:#2C2416;}
+/* HEADER */
+.hl-hdr{background:#2A4A1E;padding:16px 28px 0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(42,74,30,.28);}
+.hl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;}
+.hl-logo{font-family:'Playfair Display',serif;font-size:22px;color:#F0E6CA;letter-spacing:-.5px;}
+.hl-logo em{color:#C4784A;font-style:italic;}
+.hl-tag{font-family:'Lora',serif;font-size:10px;color:#8CAD78;font-style:italic;margin-top:1px;}
+/* SYNC STATUS */
+.hl-sync{display:flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Sans',sans-serif;}
+.hl-sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sync-saved .hl-sync-dot{background:#8CAD78;}
+.sync-saved .hl-sync-txt{color:#8CAD78;}
+.sync-saving .hl-sync-dot{background:#E8B84B;animation:pulse .8s infinite;}
+.sync-saving .hl-sync-txt{color:#E8B84B;}
+.sync-error .hl-sync-dot{background:#E07070;}
+.sync-error .hl-sync-txt{color:#E07070;}
+.sync-loading .hl-sync-dot{background:#8CAD78;animation:pulse .6s infinite;}
+.sync-loading .hl-sync-txt{color:#C9D9C0;}
+.hl-backup-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#C9D9C0;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;padding:4px 11px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap;}
+.hl-backup-btn:hover{background:rgba(255,255,255,.22);color:white;}
+/* Backup modal */
+.hl-bkmodal{background:white;border-radius:20px;max-width:420px;width:100%;margin:auto;box-shadow:0 24px 64px rgba(0,0,0,.25);overflow:hidden;}
+.hl-bkmodal-hdr{background:#2A4A1E;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;}
+.hl-bkmodal-hdr h2{font-family:'Playfair Display',serif;font-size:18px;color:#F0E6CA;}
+.hl-bkmodal-body{padding:22px;display:flex;flex-direction:column;gap:14px;}
+.hl-bk-row{display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:12px;border:1.5px solid #EDE8DF;background:#FDFAF6;}
+.hl-bk-row h3{font-family:'Playfair Display',serif;font-size:15px;color:#2A4A1E;}
+.hl-bk-row p{font-family:'Lora',serif;font-style:italic;font-size:12px;color:#9A8E7A;line-height:1.5;}
+.hl-bk-btn{border:none;border-radius:8px;padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;align-self:flex-start;}
+.hl-bk-dl{background:#2A4A1E;color:white;}
+.hl-bk-dl:hover{background:#1A3A10;}
+.hl-bk-up{background:#C4784A;color:white;}
+.hl-bk-up:hover{background:#A85E34;}
+.hl-bk-msg{font-size:12px;padding:8px 12px;border-radius:7px;font-family:'DM Sans',sans-serif;}
+.hl-bk-ok{background:#EAF2E5;color:#2A4A1E;}
+.hl-bk-err{background:#FEF0E8;color:#C4784A;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+/* WEEK NAV */
+.hl-wk{display:flex;align-items:center;gap:6px;}
+.hl-wkarr{background:rgba(255,255,255,.12);border:none;color:#C9D9C0;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.hl-wkarr:hover{background:rgba(255,255,255,.22);color:white;}
+.hl-wkarr:disabled{opacity:.3;cursor:not-allowed;}
+.hl-wkinfo{text-align:center;min-width:160px;}
+.hl-wklbl{font-size:11px;font-weight:600;color:#F0E6CA;letter-spacing:.3px;}
+.hl-wkdate{font-family:'Lora',serif;font-style:italic;font-size:10px;color:#8CAD78;margin-top:1px;}
+.hl-wkdots{display:flex;justify-content:center;gap:4px;margin-top:4px;}
+.hl-wkdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s;}
+.hl-wkdot.has{background:#8CAD78;}
+.hl-wkdot.cur{background:#C4784A;transform:scale(1.3);}
+/* NAV */
+.hl-nav{display:flex;gap:2px;flex-wrap:wrap;}
+.hl-nb{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.5px;color:#8CAD78;padding:8px 16px;border-radius:10px 10px 0 0;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.hl-nb:hover{color:#F0E6CA;background:rgba(255,255,255,.08);}
+.hl-nb.on{background:#F7F2EB;color:#2A4A1E;font-weight:600;}
+.hl-body{padding:24px 28px;max-width:1180px;margin:0 auto;}
+.hl-h1{font-family:'Playfair Display',serif;font-size:28px;color:#2A4A1E;margin-bottom:4px;}
+.hl-sub{font-family:'Lora',serif;font-style:italic;font-size:13px;color:#7A6B52;margin-bottom:22px;}
+.hl-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+/* LOADING SCREEN */
+.hl-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;}
+.hl-loading-spinner{width:40px;height:40px;border:3px solid #E0D8CA;border-top-color:#2A4A1E;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.hl-loading-txt{font-family:'Lora',serif;font-style:italic;color:#7A6B52;font-size:14px;}
+.hl-err-banner{background:#FEF0E8;border:1px solid #E8C8B0;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#C4784A;display:flex;align-items:center;gap:8px;}
+/* PLAN */
+.hl-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+@media(max-width:720px){.hl-pgrid{grid-template-columns:1fr;}}
+.hl-card{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(42,74,30,.08);}
+.hl-cardh{background:#2A4A1E;padding:12px 16px;font-family:'Playfair Display',serif;font-size:14px;color:#F0E6CA;}
+/* Desktop table */
+.hl-pt{width:100%;border-collapse:collapse;}
+.hl-pt th{background:#F0E6CA;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#7A6B52;padding:7px 12px;text-align:left;}
+.hl-pt td{padding:6px 10px;border-bottom:1px solid #F0EBE0;vertical-align:top;}
+.hl-pt tr:last-child td{border-bottom:none;}
+.hl-dlbl{font-weight:600;color:#2A4A1E;font-size:12px;white-space:nowrap;width:74px;padding-top:10px !important;}
+/* Mobile meal rows — stacked card style */
+.hl-mob-day{border-bottom:1px solid #F0EBE0;padding:10px 14px;}
+.hl-mob-day:last-child{border-bottom:none;}
+.hl-mob-daylbl{font-weight:700;font-size:12px;color:#2A4A1E;margin-bottom:7px;}
+.hl-mob-slot{margin-bottom:6px;}
+.hl-mob-slot:last-child{margin-bottom:0;}
+.hl-mob-slotlbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#9A8E7A;margin-bottom:3px;}
+/* Hide/show for responsive */
+@media(max-width:640px){
+  .hl-desktop-only{display:none !important;}
+  .hl-mobile-only{display:block !important;}
+}
+@media(min-width:641px){
+  .hl-desktop-only{display:table !important;}
+  .hl-mobile-only{display:none !important;}
+}
+.hl-sel{width:100%;border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 7px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;cursor:pointer;outline:none;transition:border-color .2s;}
+.hl-sel:focus{border-color:#2A4A1E;}
+.hl-sel.ok{border-color:#8CAD78;background:#F3F9F0;color:#2A4A1E;}
+/* Searchable dropdown */
+.hl-sdd{position:relative;width:100%;}
+.hl-sdd-trigger{width:100%;border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 26px 5px 8px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;cursor:pointer;outline:none;transition:border-color .2s;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;position:relative;}
+.hl-sdd-trigger.ok{border-color:#8CAD78;background:#F3F9F0;color:#2A4A1E;}
+.hl-sdd-trigger:hover{border-color:#2A4A1E;}
+.hl-sdd-trigger::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:#9A8E7A;pointer-events:none;}
+/* Portal panel — fixed to viewport, never clipped */
+.hl-sdd-panel{position:fixed;background:white;border:1.5px solid #2A4A1E;border-radius:9px;box-shadow:0 8px 32px rgba(42,74,30,.22);z-index:9999;overflow:hidden;}
+.hl-sdd-search{display:flex;align-items:center;padding:9px 10px;border-bottom:1px solid #EDE8DF;gap:6px;background:#FAFAF5;position:sticky;top:0;}
+.hl-sdd-search input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#2C2416;background:transparent;}
+.hl-sdd-search input::placeholder{color:#C8BFA8;}
+.hl-sdd-list{overflow-y:auto;}
+.hl-sdd-opt{padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:#2C2416;cursor:pointer;transition:background .1s;border-bottom:1px solid #F5F0E8;}
+.hl-sdd-opt:last-child{border-bottom:none;}
+.hl-sdd-opt:hover,.hl-sdd-opt.focused{background:#EAF2E5;color:#2A4A1E;}
+.hl-sdd-opt.selected{background:#F3F9F0;color:#2A4A1E;font-weight:600;}
+.hl-sdd-opt.placeholder{color:#9A8E7A;font-style:italic;}
+.hl-sdd-empty{padding:14px;text-align:center;font-family:'Lora',serif;font-style:italic;font-size:12px;color:#9A8E7A;}
+.hl-sdd-clear{background:none;border:none;color:#C8BFA8;cursor:pointer;font-size:14px;line-height:1;padding:0 2px;flex-shrink:0;}
+.hl-sdd-clear:hover{color:#C4784A;}
+/* Mobile centred modal for dropdown (avoids keyboard clipping) */
+.hl-sdd-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;}
+.hl-sdd-sheet{position:relative;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.25);z-index:9999;width:100%;max-width:420px;max-height:70vh;display:flex;flex-direction:column;}
+.hl-sdd-sheet-hdr{padding:12px 14px 10px;border-bottom:1px solid #EDE8DF;display:flex;align-items:center;gap:8px;background:#FAFAF5;border-radius:16px 16px 0 0;position:sticky;top:0;}
+.hl-sdd-sheet-hdr input{flex:1;border:1.5px solid #E0D8CA;border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:#2C2416;background:white;outline:none;}
+.hl-sdd-sheet-hdr input:focus{border-color:#2A4A1E;}
+.hl-sdd-sheet-list{overflow-y:auto;flex:1;}
+.hl-sdd-sheet-opt{padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:14px;color:#2C2416;cursor:pointer;border-bottom:1px solid #F5F0E8;}
+.hl-sdd-sheet-opt:last-child{border-bottom:none;}
+.hl-sdd-sheet-opt:active{background:#EAF2E5;}
+.hl-sdd-sheet-opt.selected{color:#2A4A1E;font-weight:600;background:#F3F9F0;}
+.hl-sdd-sheet-opt.placeholder{color:#9A8E7A;font-style:italic;}
+.hl-sdd-sheet-empty{padding:20px;text-align:center;font-family:'Lora',serif;font-style:italic;font-size:13px;color:#9A8E7A;}
+.hl-meal-hint{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;}
+.hl-nut-hint{font-size:10px;color:#8CAD78;display:flex;gap:5px;flex-wrap:wrap;}
+.hl-steps-btn{background:none;border:1px solid #D0C8B8;color:#7A6B52;border-radius:6px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.hl-steps-btn:hover{border-color:#2A4A1E;color:#2A4A1E;}
+.hl-bulk-btn{border:1px solid #B0A8D8;color:#6A5A8A;background:none;border-radius:6px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.hl-bulk-btn:hover{background:#F0EEF8;}
+.hl-bulk-btn.on{background:#6A5A8A;border-color:#6A5A8A;color:white;}
+.hl-skip-btn{border:1px solid #D0C8B8;color:#9A8E7A;background:none;border-radius:6px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.hl-skip-btn:hover{background:#F5F0E8;}
+.hl-skip-btn.on{background:#5B7A35;border-color:#5B7A35;color:white;}
+.hl-freezer-btn{border:1px solid #D0C8B8;color:#9A8E7A;background:none;border-radius:6px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.hl-freezer-btn:hover{background:#F5F0E8;}
+.hl-freezer-btn.on{background:#5B7A35;border-color:#5B7A35;color:white;}
+/* Pantry */
+.hl-pantry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px;}
+.hl-pantry-card{background:white;border-radius:14px;padding:0;box-shadow:0 2px 12px rgba(42,74,30,.07);overflow:hidden;display:flex;flex-direction:column;}
+.hl-pantry-ch{background:linear-gradient(135deg,#3A6B2A,#2A4A1E);padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.hl-pantry-ch h3{font-family:'Playfair Display',serif;font-size:14px;color:#F0E6CA;flex:1;}
+.hl-pantry-item{display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid #F5F0E8;}
+.hl-pantry-item:last-child{border-bottom:none;}
+.hl-pantry-amt{background:#EAF2E5;color:#2A4A1E;border-radius:6px;font-size:11px;font-weight:700;padding:2px 8px;flex-shrink:0;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.hl-pantry-amt:hover{background:#D4EAC8;}
+.hl-pantry-amt.low{background:#FEF0E8;color:#C4784A;}
+.hl-pantry-amt.empty{background:#FEF0E8;color:#C0392B;text-decoration:line-through;}
+.hl-pantry-name{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;}
+.hl-pantry-addrow{display:flex;gap:6px;padding:10px 14px;border-top:1px dashed #E8E0D0;flex-wrap:wrap;background:#FAFAF5;}
+.hl-pantry-input{flex:1;min-width:100px;border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 8px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:white;outline:none;}
+.hl-pantry-input:focus{border-color:#2A4A1E;}
+.hl-pantry-num{width:60px;border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 6px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:white;outline:none;flex-shrink:0;}
+.hl-pantry-num:focus{border-color:#2A4A1E;}
+.hl-pantry-unit{border:1.5px solid #E0D8CA;border-radius:7px;padding:4px 6px;font-family:'DM Sans',sans-serif;font-size:11px;color:#7A6B52;background:#FDFAF6;outline:none;flex-shrink:0;}
+.hl-pantry-badge{font-size:9px;background:#EAF2E5;color:#3A6B2A;border-radius:4px;padding:1px 5px;font-weight:600;margin-left:4px;}
+.hl-pantry-badge.covered{background:#EAF2E5;color:#3A6B2A;}
+.hl-pantry-badge.partial{background:#FEF0E8;color:#C4784A;}
+.hl-week-use-btn{background:#5B7A35;border:none;color:white;border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;gap:6px;}
+.hl-week-use-btn:hover{background:#3A6B2A;}
+.hl-freezer-btn{border:1px solid #8AB8D8;color:#3A6A9A;background:none;border-radius:6px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;}
+.hl-freezer-btn:hover{background:#EAF2FB;}
+.hl-freezer-btn.on{background:#3A6A9A;border-color:#3A6A9A;color:white;}
+.hl-bulk-badge{background:#6A5A8A;color:white;border-radius:4px;font-size:9px;font-weight:700;padding:1px 5px;}
+.hl-clr{background:none;border:1.5px dashed #D0C8B8;color:#9A8E7A;border-radius:8px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.hl-clr:hover{border-color:#C4784A;color:#C4784A;}
+/* RECIPES */
+.hl-recipe-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.hl-import-btn{background:#2A4A1E;border:none;color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:8px 18px;border-radius:20px;cursor:pointer;transition:background .2s;}
+.hl-import-btn:hover{background:#1A3A10;}
+.hl-recipe-controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.hl-search{flex:1;min-width:180px;border:1.5px solid #E0D8CA;border-radius:8px;padding:7px 12px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;transition:border-color .2s;}
+.hl-search:focus{border-color:#2A4A1E;}
+.hl-sort-sel{border:1.5px solid #E0D8CA;border-radius:8px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#7A6B52;background:#FDFAF6;outline:none;cursor:pointer;}
+.hl-recipe-count{font-size:11px;color:#9A8E7A;font-family:'Lora',serif;font-style:italic;white-space:nowrap;}
+.hl-ctabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;}
+.hl-ct{background:white;border:1.5px solid #D9D0C0;border-radius:24px;padding:5px 14px;font-size:11px;font-weight:500;color:#7A6B52;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.hl-ct:hover{border-color:#2A4A1E;color:#2A4A1E;}
+.hl-ct.on{background:#2A4A1E;border-color:#2A4A1E;color:white;}
+.hl-rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.hl-rc{background:white;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(42,74,30,.06);border:1px solid #EDE8DF;transition:all .2s;display:flex;flex-direction:column;gap:6px;cursor:pointer;}
+.hl-rc:hover{box-shadow:0 6px 24px rgba(42,74,30,.14);transform:translateY(-2px);}
+.hl-rc.custom{border-color:#C4784A30;}
+.hl-rn{font-family:'Playfair Display',serif;font-size:14px;color:#2C2416;font-weight:600;}
+.hl-rm{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.hl-sp{background:#EAF2E5;color:#3A6B2A;border-radius:20px;font-size:10px;font-weight:600;padding:2px 8px;}
+.hl-cbadge{background:#C4784A18;color:#C4784A;border:1px solid #C4784A35;border-radius:10px;font-size:9px;font-weight:700;padding:1px 6px;}
+.hl-nut-row{display:flex;gap:7px;flex-wrap:wrap;background:#F9F6F0;border-radius:7px;padding:6px 9px;}
+.hl-macro{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hl-macro-val{font-size:13px;font-weight:700;}
+.hl-macro-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:#9A8E7A;}
+.c-k{color:#C4784A;}.c-p{color:#3A7FBD;}.c-c{color:#B8820A;}.c-f{color:#8A5A8A;}.c-fi{color:#4A8A5A;}
+.hl-rl{display:inline-flex;align-items:center;gap:3px;color:#C4784A;font-size:11px;font-weight:500;text-decoration:none;margin-top:1px;}
+.hl-rl:hover{opacity:.7;text-decoration:underline;}
+/* SHOPPING */
+.hl-stabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.hl-st{background:white;border:1.5px solid #D9D0C0;border-radius:10px;padding:7px 15px;font-size:12px;font-weight:500;color:#7A6B52;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.hl-st:hover{border-color:#2A4A1E;}
+.hl-st.on{background:#2A4A1E;border-color:#2A4A1E;color:white;}
+.hl-bdg{background:#C4784A;color:white;border-radius:10px;font-size:9px;font-weight:700;padding:1px 5px;}
+.hl-st.on .hl-bdg{background:white;color:#2A4A1E;}
+.hl-scard{background:white;border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(42,74,30,.08);max-width:680px;}
+.hl-shead{padding:12px 18px;font-family:'Playfair Display',serif;font-size:14px;color:white;display:flex;align-items:center;gap:8px;}
+.bg-gen{background:#C4784A;}.bg-ess{background:#5B7A35;}.bg-adhoc{background:#6A5A8A;}.bg-master{background:#2A4A1E;}
+.hl-master-addrow{display:flex;gap:6px;padding:10px 16px;border-top:2px solid #F0EBE0;background:#FAFAF5;flex-wrap:wrap;}
+.hl-master-type{border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 8px;font-family:'DM Sans',sans-serif;font-size:11px;color:#7A6B52;background:#FDFAF6;outline:none;cursor:pointer;flex-shrink:0;}
+.hl-master-type:focus{border-color:#2A4A1E;}
+.hl-grp{border-bottom:2px solid #F0EBE0;}
+.hl-grp:last-child{border-bottom:none;}
+.hl-grph{display:flex;align-items:center;gap:8px;padding:8px 16px;background:#FDFAF6;cursor:pointer;user-select:none;}
+.hl-grph:hover{background:#FAF6F0;}
+.hl-grpl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#7A6B52;}
+.hl-grpc{font-size:10px;color:#B0A490;margin-left:auto;}
+.hl-chev{font-size:9px;color:#B0A490;transition:transform .2s;}
+.hl-chev.open{transform:rotate(180deg);}
+.hl-si{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid #F5F0E8;font-size:13px;min-height:44px;}
+.hl-si:last-child{border-bottom:none;}
+.hl-si:hover{background:#FAF7F2;}
+.hl-si.done{opacity:.38;}
+.hl-si.done .hl-in{text-decoration:line-through;}
+.hl-cb{width:22px;height:22px;border-radius:5px;border:1.5px solid #C8BFA8;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;transition:all .15s;}
+.hl-si.done .hl-cb{background:#2A4A1E;border-color:#2A4A1E;color:white;}
+.hl-in{line-height:1.4;flex:1;}
+.hl-src{font-size:10px;color:#9A8E7A;font-style:italic;margin-top:1px;}
+.hl-empty{padding:28px 18px;text-align:center;font-family:'Lora',serif;font-style:italic;color:#9A8E7A;font-size:13px;line-height:1.8;}
+.hl-mchips{display:flex;flex-wrap:wrap;gap:4px;padding:9px 16px;border-bottom:1px solid #F0EBE0;background:#FBF8F3;}
+.hl-chip{background:#EAF2E5;color:#2A4A1E;border-radius:20px;font-size:10px;font-weight:500;padding:2px 8px;}
+.hl-addrow{display:flex;gap:8px;padding:10px 16px;border-top:2px solid #F0EBE0;background:#FDFAF6;flex-wrap:wrap;}
+.hl-addinput{flex:1;min-width:120px;border:1.5px solid #E0D8CA;border-radius:7px;padding:6px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:white;outline:none;transition:border-color .2s;}
+.hl-addinput:focus{border-color:#5B7A35;}
+.hl-catsel{border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 8px;font-family:'DM Sans',sans-serif;font-size:11px;color:#7A6B52;background:#FDFAF6;outline:none;cursor:pointer;max-width:150px;flex-shrink:0;}
+.hl-catsel:focus{border-color:#2A4A1E;}
+.hl-addbtn{background:#5B7A35;border:none;color:white;border-radius:7px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+.hl-addbtn:hover{background:#4A6629;}
+.hl-delbtn{background:none;border:none;color:#C8BFA8;cursor:pointer;font-size:14px;padding:4px 5px;flex-shrink:0;transition:color .15s;line-height:1;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.hl-delbtn:hover,.hl-delbtn:active{color:#C0392B;background:#FEF0E8;}
+.hl-editbtn{background:none;border:none;color:#B0A8C0;cursor:pointer;font-size:13px;padding:4px 5px;flex-shrink:0;transition:all .15s;line-height:1;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;}
+.hl-editbtn:hover,.hl-editbtn:active{background:#EAF2E5;color:#2A4A1E;}
+.hl-inline-input{flex:1;border:1.5px solid #2A4A1E;border-radius:5px;padding:2px 6px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:white;outline:none;}
+.hl-inline-save{background:#2A4A1E;border:none;color:white;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+.hl-shop-addrow{display:flex;gap:8px;padding:8px 18px 10px;border-top:1px dashed #E8E0D0;flex-wrap:wrap;}
+.hl-shop-addinput{flex:1;min-width:120px;border:1.5px solid #E0D8CA;border-radius:7px;padding:5px 9px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;transition:border-color .2s;}
+.hl-shop-addinput:focus{border-color:#C4784A;}
+.hl-shop-addbtn{background:#C4784A;border:none;color:white;border-radius:7px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s;}
+.hl-shop-addbtn:hover{background:#A85E34;}
+.hl-manual-item{background:#FEF9F4;}
+/* Quantity pill */
+.hl-qty{display:inline-block;background:#EAF2E5;color:#3A6B2A;border-radius:5px;font-size:10px;font-weight:600;padding:1px 6px;margin-right:5px;cursor:pointer;white-space:nowrap;transition:background .15s;flex-shrink:0;}
+.hl-qty:hover{background:#D4EAC8;}
+.hl-qty-input{width:60px;border:1.5px solid #2A4A1E;border-radius:5px;padding:2px 5px;font-size:11px;font-family:'DM Sans',sans-serif;color:#2C2416;background:white;outline:none;flex-shrink:0;}
+.hl-edit-row{display:flex;gap:6px;flex:1;align-items:center;}
+/* Removed items footer */
+.hl-removed-bar{padding:8px 18px;border-top:1px dashed #E8E0D0;font-size:11px;color:#9A8E7A;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.hl-restore-btn{background:none;border:1px solid #D0C8B8;color:#7A6B52;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.hl-restore-btn:hover{border-color:#2A4A1E;color:#2A4A1E;}
+/* NUTRITION */
+.hl-sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+@media(max-width:560px){.hl-sum-grid{grid-template-columns:repeat(2,1fr);}}
+.hl-sum-card{background:white;border-radius:13px;padding:16px;box-shadow:0 2px 12px rgba(42,74,30,.06);text-align:center;}
+.hl-sum-icon{font-size:20px;margin-bottom:3px;}
+.hl-sum-val{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;line-height:1;}
+.hl-sum-unit{font-size:10px;color:#9A8E7A;margin-left:1px;}
+.hl-sum-lbl{font-size:10px;color:#7A6B52;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.hl-sum-sub{font-size:9px;color:#B0A490;margin-top:2px;font-family:'Lora',serif;font-style:italic;}
+.hl-day-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.hl-day-card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(42,74,30,.06);border:1px solid #EDE8DF;}
+.hl-day-hdr{background:#2A4A1E;padding:10px 14px;font-family:'Playfair Display',serif;font-size:14px;color:#F0E6CA;}
+.hl-day-meal{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 14px;border-bottom:1px solid #F5F0E8;gap:7px;}
+.hl-meal-type{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#9A8E7A;}
+.hl-meal-name{font-size:12px;color:#2C2416;font-weight:500;margin-top:1px;}
+.hl-meal-kcal{font-size:12px;font-weight:700;color:#C4784A;flex-shrink:0;}
+.hl-meal-na{color:#C8BFA8;font-size:12px;}
+.hl-mpills{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;}
+.hl-mpill{border-radius:20px;font-size:9px;font-weight:600;padding:1px 6px;}
+.mk{background:#FEF0E8;color:#C4784A;}.mp{background:#E8F2FB;color:#3A7FBD;}.mc{background:#FDF6E3;color:#B8820A;}.mf{background:#F5EEF5;color:#8A5A8A;}
+.hl-ptotals{padding:10px 14px;background:#FAFAF5;border-top:2px solid #F0EBE0;}
+.hl-prow{margin-bottom:8px;}
+.hl-prow:last-child{margin-bottom:0;}
+.hl-pname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#2A4A1E;margin-bottom:4px;}
+.hl-mbar-wrap{height:7px;background:#F0EBE0;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin-top:5px;}
+.hl-mbar-p{background:#3A7FBD;}.hl-mbar-c{background:#E8B84B;}.hl-mbar-f{background:#B07DB0;}
+.hl-ref-note{background:#F0E6CA30;border:1px solid #E0D8CA;border-radius:9px;padding:11px 14px;margin-bottom:18px;font-family:'Lora',serif;font-style:italic;font-size:11px;color:#7A6B52;line-height:1.6;}
+.hl-nodata{padding:9px 14px;font-family:'Lora',serif;font-style:italic;font-size:11px;color:#9A8E7A;border-top:2px solid #F0EBE0;}
+/* MODALS */
+.hl-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px 16px;}
+.hl-rmodal{background:white;border-radius:20px;max-width:640px;width:100%;margin:auto;box-shadow:0 24px 64px rgba(0,0,0,.22);overflow:hidden;}
+.hl-rmodal-hdr{background:#2A4A1E;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.hl-rmodal-title{font-family:'Playfair Display',serif;font-size:20px;color:#F0E6CA;font-weight:700;line-height:1.2;}
+.hl-rmodal-meta{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;}
+.hl-close{background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.hl-close:hover{background:rgba(255,255,255,.28);}
+.hl-rmodal-body{padding:20px 22px;display:flex;flex-direction:column;gap:16px;max-height:70vh;overflow-y:auto;}
+.hl-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7A6B52;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.hl-sec-title::after{content:'';flex:1;height:1px;background:#EDE8DF;}
+.hl-ing-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.hl-ing-item{font-size:12px;color:#2C2416;padding:5px 8px;background:#FAFAF5;border-radius:6px;border:1px solid #EDE8DF;}
+.hl-step{display:flex;gap:10px;margin-bottom:9px;}
+.hl-step-num{background:#2A4A1E;color:white;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.hl-step-text{font-size:13px;color:#2C2416;line-height:1.6;}
+.hl-rmodal-footer{padding:14px 22px;border-top:2px solid #F0EBE0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.hl-btn-edit{background:#2A4A1E;border:none;color:white;border-radius:10px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+.hl-btn-edit:hover{background:#1A3A10;}
+.hl-btn-del{background:none;border:1.5px solid #EADBD0;color:#C4784A;border-radius:10px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.hl-btn-del:hover{background:#FEF0E8;}
+.hl-btn-save{background:#C4784A;border:none;color:white;border-radius:10px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s;}
+.hl-btn-save:hover{background:#A85E34;}
+/* FORMS */
+.hl-fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hl-ffull{grid-column:1/-1;}
+.hl-flabel{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#7A6B52;margin-bottom:3px;display:block;}
+.hl-finput{width:100%;border:1.5px solid #E0D8CA;border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;transition:border-color .2s;}
+.hl-finput:focus{border-color:#2A4A1E;}
+.hl-fsel{width:100%;border:1.5px solid #E0D8CA;border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;}
+.hl-fta{width:100%;border:1.5px solid #E0D8CA;border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;resize:vertical;min-height:80px;transition:border-color .2s;line-height:1.5;}
+.hl-fta:focus{border-color:#2A4A1E;}
+.hl-nut-section{margin-top:6px;padding-top:12px;border-top:2px dashed #E8E0D4;}
+.hl-nut-section h3{font-family:'Playfair Display',serif;font-size:14px;color:#2A4A1E;margin-bottom:2px;}
+.hl-nut-section p{font-family:'Lora',serif;font-style:italic;font-size:11px;color:#9A8E7A;margin-bottom:10px;}
+.hl-nut-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:460px){.hl-nut-grid{grid-template-columns:repeat(3,1fr);}}
+.hl-imodal{background:white;border-radius:20px;max-width:580px;width:100%;margin:auto;box-shadow:0 24px 64px rgba(0,0,0,.22);}
+.hl-imodal-hdr{background:#2A4A1E;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;}
+.hl-imodal-hdr h2{font-family:'Playfair Display',serif;font-size:20px;color:#F0E6CA;}
+.hl-imodal-body{padding:20px 22px;max-height:75vh;overflow-y:auto;}
+.hl-url-row{display:flex;gap:8px;margin-bottom:8px;}
+.hl-url-input{flex:1;border:1.5px solid #E0D8CA;border-radius:8px;padding:8px 11px;font-family:'DM Sans',sans-serif;font-size:12px;color:#2C2416;background:#FDFAF6;outline:none;}
+.hl-url-input:focus{border-color:#2A4A1E;}
+.hl-fetch-btn{background:#C4784A;border:none;color:white;border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s;}
+.hl-fetch-btn:hover{background:#A85E34;}
+.hl-fetch-btn:disabled{opacity:.5;cursor:not-allowed;}
+.hl-fetch-note{font-family:'Lora',serif;font-style:italic;font-size:11px;color:#9A8E7A;margin-bottom:16px;}
+.hl-status{padding:8px 12px;border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;margin-bottom:12px;}
+.hl-status.info{background:#EAF2E5;color:#2A4A1E;}
+.hl-status.error{background:#FEF0E8;color:#C4784A;}
+.hl-status.loading{background:#F0E6CA40;color:#7A6B52;}
+.hl-imodal-footer{padding:14px 22px;border-top:2px solid #F0EBE0;display:flex;justify-content:flex-end;gap:10px;}
+.hl-btn-cancel{background:none;border:1.5px solid #D0C8B8;color:#7A6B52;border-radius:10px;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;}
+.hl-btn-primary{background:#2A4A1E;border:none;color:white;border-radius:10px;padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.hl-btn-primary:hover{background:#1A3A10;}
+.hl-smodal{background:white;border-radius:20px;max-width:520px;width:100%;margin:auto;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.22);}
+.hl-smodal-hdr{background:#2A4A1E;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;}
+.hl-smodal-hdr h2{font-family:'Playfair Display',serif;font-size:18px;color:#F0E6CA;}
+.hl-smodal-body{padding:18px 20px;max-height:60vh;overflow-y:auto;}
+.hl-no-steps{font-family:'Lora',serif;font-style:italic;font-size:13px;color:#9A8E7A;text-align:center;padding:20px;}
+</style>
+</head>
+<body>
+<div id="hl-root"></div>
+<script type="text/babel">
+const { useState, useMemo, useEffect, useRef, useCallback } = React;
+
+/* ── CONFIG ──────────────────────────────────────────────── */
+// Path to the PHP file — update if you rename it or put it elsewhere
+const API = 'homelife-data.php';
+
+/* ── WEEK HELPERS ────────────────────────────────────────── */
+function getFridayKey(off=0){
+  const d=new Date(); d.setDate(d.getDate()+off*7);
+  const day=d.getDay();
+  const daysBack=day>=5?day-5:day+2;
+  d.setDate(d.getDate()-daysBack);
+  return d.toISOString().split('T')[0];
+}
+function getWeekKey(off=0){ return getFridayKey(off); }
+
+// Given a raw plans object from the server, migrate any plans stored under
+// old key formats (Monday-based, etc.) into Friday-based keys so data
+// is never lost after an app update. Scans ±3 days around each known Friday.
+function migratePlans(rawPlans){
+  if(!rawPlans)return{};
+  const result={...rawPlans};
+  // Build a set of all valid Friday keys we care about
+  const fridayKeys=new Set(WEEK_OFFSETS.map(o=>getFridayKey(o)));
+  Object.keys(rawPlans).forEach(k=>{
+    if(fridayKeys.has(k))return; // already correct format
+    const d=new Date(k+'T12:00:00');
+    if(isNaN(d.getTime()))return;
+    // Find the nearest Friday within ±3 days
+    for(let delta=-3;delta<=3;delta++){
+      const candidate=new Date(d);
+      candidate.setDate(d.getDate()+delta);
+      const candidateKey=candidate.toISOString().split('T')[0];
+      if(fridayKeys.has(candidateKey)){
+        // Migrate: merge old into new (don't overwrite if new already has data)
+        if(!result[candidateKey]||!Object.values(result[candidateKey]).some(v=>v.dinner||v.alex||v.sam)){
+          result[candidateKey]=rawPlans[k];
+        }
+        delete result[k];
+        break;
+      }
+    }
+  });
+  return result;
+}
+function keyToLabel(k){
+  // Label shows Sat (day after Friday key) through to following Friday
+  const fri=new Date(k+'T12:00:00');
+  const sat=new Date(fri); sat.setDate(fri.getDate()+1);
+  const nextFri=new Date(fri); nextFri.setDate(fri.getDate()+7);
+  const f={day:'numeric',month:'short'};
+  return`${sat.toLocaleDateString('en-GB',f)} – ${nextFri.toLocaleDateString('en-GB',f)}`;
+}
+function keyToRelLabel(k){
+  const diff=Math.round((new Date(k+'T12:00:00')-new Date(getWeekKey(0)+'T12:00:00'))/(7*864e5));
+  return diff===0?'This Week':diff===1?'Next Week':diff===-1?'Last Week':diff===2?'2 Weeks Ahead':diff===-2?'2 Weeks Ago':keyToLabel(k);
+}
+const WEEK_OFFSETS=[-2,-1,0,1,2];
+const DAYS=['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
+const DEF_PLAN={...Object.fromEntries(DAYS.map(d=>[d,{dinner:'',alex:'',sam:''}])),bulkCook:[],addToList:[]};
+const DEF_ESS=['Apples','Bananas','Blueberries','Cows Milk','Oat Milk','Greek Yoghurt','Eggs','Brown bread flour','Butter','Cherry Tomatoes','Walnuts','Chia Seeds','Dishwasher cleaner (monthly)','Loo roll (monthly)','Tissues'];
+// SKIP_RECIPE = don't try to look these up as recipes
+const SKIP_RECIPE=['Eating Out','Leftovers',''];
+// SKIP_DISPLAY = treat as "nothing selected" in the dropdown trigger
+const SKIP=[''];
+const CUISINES=['All','African','American & Mexican','Asian','European & UK','Bread','Baking','Special Occasions','Strength Programme'];
+const SECTIONS=[
+  {id:'produce',label:'🥦 Fresh Produce & Herbs'},{id:'meat',label:'🥩 Meat, Fish & Veg Protein'},
+  {id:'dairy',label:'🧀 Dairy & Eggs'},{id:'frozen',label:'🧊 Frozen'},
+  {id:'bakery',label:'🍞 Bakery & Bread'},{id:'grains',label:'🍝 Pasta, Rice & Grains'},
+  {id:'tins',label:'🥫 Tins, Jars & Stock'},{id:'sauces',label:'🫙 Sauces & Condiments'},
+  {id:'spices',label:'🌿 Spices & Herbs (Dried)'},{id:'other',label:'🛒 Other'},
+];
+function cat(ing,overrides){
+  const k=ing.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+  if(overrides&&overrides[k])return overrides[k];
+  const s=ing.toLowerCase();
+  if(/chicken breast|chicken thigh|beef mince|lamb mince|pork shoulder|rib.eye|brisket|sausage|bacon|chorizo|fish finger|seafood|tofu/.test(s))return'meat';
+  if(/\begg|butter\b|parmesan|feta\b|sour cream|double cream|oat cream|yoghurt|cheddar|mozzarella|milk/.test(s)&&!/coconut/.test(s))return'dairy';
+  if(/frozen/.test(s))return'frozen';
+  if(/\bonion|spring onion|shallot|garlic|fresh ginger|\bpepper\b|mixed pepper|cherry tomato|vine tomato|\btomato\b|lemon|lime|avocado|spinach|leek|carrot|celery|mushroom|aubergine|butternut|sweet potato|\bpotato\b|mango|banana|lettuce|fresh coriander|fresh basil|fresh thyme/.test(s))return'produce';
+  if(/\bbread\b|flour|tortilla|shortcrust pastry|sourdough starter|breadcrumb/.test(s)&&!/coconut/.test(s))return'bakery';
+  if(/pasta|spaghetti|\brice\b|noodle|couscous|bulgar|quinoa|\boats\b|paella rice/.test(s))return'grains';
+  if(/chopped tomato|passata|tomato pure|kidney bean|chickpea|black bean|baked bean|coconut milk|coconut cream|chicken stock|beef stock|\blentil\b|cider\b|dark chocolate|capers|olives/.test(s))return'tins';
+  if(/soy sauce|fish sauce|pesto|salsa|worcestershire|dijon|mustard|vinegar|honey|maple|chipotle|tahini|peanut butter|olive oil|sesame oil|sweet chilli|gravy|coconut oil/.test(s))return'sauces';
+  if(/cumin|ground coriander|paprika|turmeric|chilli|curry powder|cayenne|oregano|bay leave|fajita season|black pepper|\bsalt\b|saffron|vanilla|bicarbonate|garlic powder|sugar/.test(s))return'spices';
+  return'other';
+}
+
+/* ── RECIPES DATA ────────────────────────────────────────── */
+const BUILT_IN=[
+  {name:'Chicken Curry, Slow Cooked',cuisine:'Asian',serves:6,link:null,ingredients:['1.5kg chicken','Coconut cream','2 large onions','Garlic','200ml passata','1 can chickpeas','Curry powder','Ground coriander','Fresh ginger','Bay leaves'],instructions:['Dice onions and fry in oil until soft, about 8 minutes.','Add garlic, ginger, curry powder and coriander. Fry 2 minutes.','Add chicken and brown on all sides.','Pour in passata and coconut cream. Add chickpeas and bay leaves.','Slow cook on low 6–8 hrs or high 3–4 hrs.','Season and serve with rice or naan.'],nutrition:{kcal:420,protein:38,carbs:12,fat:22,fibre:3}},
+  {name:'Lamb Bulgar Wheat Tagine',cuisine:'European & UK',serves:4,link:null,ingredients:['500g British lamb mince','260g bulgar wheat','2 large onions','Garlic','Cumin','Ground coriander','Bay leaves','400g chopped tomatoes','Tomato puree','Sweet pointed peppers'],instructions:['Fry onions until golden. Add garlic and spices, cook 2 min.','Add lamb and brown, breaking up lumps.','Stir in tomato puree, tomatoes and diced peppers.','Add 400ml water and bay leaves. Simmer covered 20 min.','Stir in bulgar wheat, cover and cook 15 min until absorbed.','Season and serve with fresh herbs.'],nutrition:{kcal:520,protein:30,carbs:48,fat:18,fibre:6}},
+  {name:'Vegan Creamy Tomato Pasta',cuisine:'European & UK',serves:4,link:null,ingredients:['Pasta','400g chopped tomatoes','Garlic','Onion','Oat cream','Spinach','Olive oil','Fresh basil'],instructions:['Cook pasta. Reserve 1 cup pasta water before draining.','Fry onion in oil until soft. Add garlic 1 min.','Add tomatoes, simmer 10 min.','Stir in oat cream and pasta water.','Add spinach until wilted. Season.','Toss with pasta and fresh basil.'],nutrition:{kcal:375,protein:12,carbs:60,fat:9,fibre:5}},
+  {name:'Tofu Stuffed Sweet Potato',cuisine:'Asian',serves:4,link:null,ingredients:['500g tofu','Large sweet potatoes','Spring onions','Vine tomatoes','Soy sauce','Garlic','Sesame oil'],instructions:['Bake sweet potatoes at 200°C 45–55 min.','Press tofu dry, crumble. Fry in sesame oil until golden.','Add garlic 1 min. Add soy sauce and toss.','Dice tomatoes, slice spring onions.','Cut open potatoes, fluff flesh, fill with tofu.','Top with tomatoes, spring onions and sesame oil.'],nutrition:{kcal:320,protein:14,carbs:40,fat:10,fibre:7}},
+  {name:'Red Lentil Dahl',cuisine:'Asian',serves:4,link:null,ingredients:['500g red lentils','400g chopped tomatoes','2 large onions','Cumin','Ground coriander','Coconut cream','Garlic','Fresh ginger'],instructions:['Rinse lentils.','Fry onions until golden. Add garlic, ginger and spices.','Add lentils and tomatoes. Cover with 800ml water.','Simmer 25–30 min, stirring occasionally.','Stir in coconut cream, simmer 5 min.','Season and serve with rice or flatbreads.'],nutrition:{kcal:290,protein:16,carbs:42,fat:5,fibre:10}},
+  {name:'Chilli Con Carne',cuisine:'American & Mexican',serves:4,link:null,ingredients:['500g beef mince','1 can kidney beans','400g chopped tomatoes','Onion','Garlic','Cumin','Chilli powder','Beef stock'],instructions:['Fry onion and garlic until soft.','Brown mince, drain excess fat.','Add cumin and chilli, cook 1 min.','Add tomatoes, beans and stock.','Simmer 30 min uncovered until thick.','Serve with rice, sour cream, guacamole.'],nutrition:{kcal:420,protein:32,carbs:26,fat:18,fibre:8}},
+  {name:'Fajitas',cuisine:'American & Mexican',serves:4,link:'https://www.bbcgoodfood.com/recipes/easy-chicken-fajitas',ingredients:['Chicken breast','Mixed peppers','Onion','Fajita seasoning','Flour tortillas','Sour cream','Salsa','Lime'],instructions:['Slice chicken, toss with fajita seasoning.','Slice peppers and onion.','Cook chicken on high heat until browned.','Add peppers and onion, stir fry until charred.','Squeeze over lime.','Serve in warm tortillas with sour cream and salsa.'],nutrition:{kcal:480,protein:32,carbs:42,fat:16,fibre:5}},
+  {name:'Burritos',cuisine:'American & Mexican',serves:4,link:'https://www.bbcgoodfood.com/recipes/easy-beef-burritos',ingredients:['500g beef mince','Flour tortillas','1 can kidney beans','Rice','Mixed peppers','Onion','Cumin','Smoked paprika','Salsa'],instructions:['See link for full recipe.'],nutrition:{kcal:580,protein:30,carbs:62,fat:20,fibre:8}},
+  {name:'Big Bolognese',cuisine:'European & UK',serves:12,link:'https://www.bbcgoodfood.com/recipes/big-batch-bolognese',ingredients:['750g beef mince','Pasta','Onions','Garlic','400g chopped tomatoes','Tomato puree','Red wine','Olive oil','Bay leaves','Dried oregano'],instructions:['See link for full recipe.'],nutrition:{kcal:480,protein:32,carbs:38,fat:20,fibre:4}},
+  {name:'Carbonara',cuisine:'European & UK',serves:4,link:null,ingredients:['Spaghetti','Smoked bacon lardons','Garlic','Eggs','Parmesan','Black pepper'],instructions:['Cook spaghetti al dente. Reserve 1 cup pasta water.','Fry lardons until crispy. Add garlic briefly.','Beat eggs with parmesan and black pepper.','Remove pan from heat. Add drained pasta.','Away from heat add egg mix, toss with pasta water to loosen.','Serve immediately with extra parmesan.'],nutrition:{kcal:620,protein:26,carbs:64,fat:28,fibre:2}},
+  {name:'Pasta Bake',cuisine:'European & UK',serves:6,link:'https://www.bbcgoodfood.com/recipes/chicken-spinach-bacon-alfredo-pasta-bake',ingredients:['Chicken breast','Pasta','Spinach','Bacon lardons','Double cream','Parmesan','Garlic'],instructions:['See link for full recipe.'],nutrition:{kcal:520,protein:34,carbs:44,fat:22,fibre:3}},
+  {name:"Shepherd's Pie",cuisine:'European & UK',serves:4,link:'https://www.bbcgoodfood.com/recipes/no-fuss-shepherds-pie',ingredients:['500g lamb mince','Onion','Carrots','Garlic','Beef stock','Tomato puree','Worcestershire sauce','Potatoes','Butter','Milk'],instructions:['See link for full recipe.'],nutrition:{kcal:520,protein:28,carbs:46,fat:22,fibre:5}},
+  {name:'Bangers & Mash',cuisine:'European & UK',serves:4,link:null,ingredients:['Sausages','Potatoes','Butter','Milk','Onion','Beef stock','Gravy granules'],instructions:['Grill sausages until cooked through.','Boil potatoes, mash with butter and warm milk.','Caramelise onions in butter 15 min.','Add stock and gravy granules, stir until thick.','Serve sausages on mash with onion gravy.'],nutrition:{kcal:580,protein:22,carbs:50,fat:28,fibre:4}},
+  {name:'Spanish Chicken Traybake',cuisine:'European & UK',serves:4,link:null,ingredients:['Chicken thighs','Chorizo','Red peppers','Cherry tomatoes','Olives','Garlic','Smoked paprika','Olive oil'],instructions:['Preheat oven to 200°C.','Toss chicken with oil, paprika, salt and pepper.','Slice chorizo and peppers, halve tomatoes.','Arrange all in large roasting tin with garlic and olives.','Roast 40–45 min until chicken is charred.','Rest 5 min before serving.'],nutrition:{kcal:420,protein:34,carbs:12,fat:22,fibre:3}},
+  {name:'Sticky Chicken',cuisine:'Asian',serves:4,link:null,ingredients:['Chicken thighs','Soy sauce','Honey','Garlic','Fresh ginger','Sesame seeds','Spring onions','Rice'],instructions:['Mix soy sauce, honey, garlic and ginger for marinade.','Score and marinate chicken 30+ min.','Cook rice.','Bake chicken at 200°C 35 min, basting halfway.','Toast sesame seeds, slice spring onions.','Serve on rice with sesame seeds and spring onions.'],nutrition:{kcal:420,protein:32,carbs:26,fat:18,fibre:2}},
+  {name:'Jacket Potato',cuisine:'European & UK',serves:2,link:null,ingredients:['Large potatoes','Butter','Cheddar cheese','Baked beans','Sour cream'],instructions:['Scrub potatoes. Prick all over. Rub with oil and salt.','Bake at 200°C 1 hour until skin is crispy.','Cut a cross, squeeze open.','Add butter, cheddar and warm baked beans.','Top with sour cream.'],nutrition:{kcal:380,protein:16,carbs:56,fat:10,fibre:5}},
+  {name:'Omelette',cuisine:'European & UK',serves:2,link:null,ingredients:['Eggs','Butter','Cheddar cheese','Mixed peppers','Mushrooms','Onion'],instructions:['Dice veg, fry until soft.','Beat 3 eggs per person with salt and pepper.','Melt butter in non-stick pan on medium-high. Pour in eggs.','Draw cooked edges to centre as eggs set.','Add veg and cheese when almost set.','Fold and serve immediately.'],nutrition:{kcal:280,protein:18,carbs:4,fat:20,fibre:1}},
+  {name:'Chicken Pad Thai',cuisine:'Asian',serves:2,link:'https://www.bbcgoodfood.com/recipes/chicken-pad-thai',ingredients:['Rice noodles','Chicken breast','Eggs','Bean sprouts','Spring onions','Peanuts','Fish sauce','Lime','Sweet chilli sauce'],instructions:['See link for full recipe.'],nutrition:{kcal:520,protein:36,carbs:52,fat:16,fibre:3}},
+  {name:'Katsu Curry',cuisine:'Asian',serves:4,link:'https://www.bbc.co.uk/food/recipes/chicken_katsu_curry_48890',ingredients:['Chicken breast','Breadcrumbs','Rice','Onion','Garlic','Curry powder','Coconut milk','Maple syrup','Soy sauce'],instructions:['See link for full recipe.'],nutrition:{kcal:580,protein:32,carbs:60,fat:18,fibre:4}},
+  {name:'Mango Chicken Curry',cuisine:'Asian',serves:4,link:null,ingredients:['Chicken breast','1 mango','Red bell pepper','Red onion','Fresh ginger','Garlic','Currants','Roma tomatoes','Chicken stock','Curry powder','Cayenne pepper','Fresh coriander','Lime'],instructions:['Dust chicken in flour with curry powder and cayenne. Fry until golden.','Set aside. Fry red onion, garlic, ginger.','Add pepper, cook 3 min. Add curry powder.','Pour in stock and tomatoes. Return chicken.','Simmer 20 min. Add mango and currants. Cook 5 min.','Finish with lime juice and fresh coriander.'],nutrition:{kcal:420,protein:34,carbs:30,fat:14,fibre:4}},
+  {name:'Peanut Butter Chicken Pasta',cuisine:'Asian',serves:6,link:null,ingredients:['4 chicken breasts','Pasta','3 mixed peppers','Spring onions','Garlic','Fresh ginger','Peanut butter','Soy sauce','Lime','Chilli flakes','Fresh coriander'],instructions:['Cook pasta al dente, reserve pasta water.','Cook chicken, rest and slice.','Stir fry peppers.','Make sauce: peanut butter, soy, lime, garlic, ginger. Thin with pasta water.','Toss pasta, chicken, peppers in sauce.','Top with spring onions, coriander, chilli flakes.'],nutrition:{kcal:560,protein:36,carbs:46,fat:22,fibre:5}},
+  {name:'Chicken, Red Pepper & Almond Traybake',cuisine:'African',serves:4,link:'https://www.bbcgoodfood.com/recipes/chicken-red-pepper-almond-traybake',ingredients:['Chicken thighs','Red peppers','Flaked almonds','Onion','Garlic','Olive oil','Paprika','Cumin'],instructions:['See link for full recipe.'],nutrition:{kcal:420,protein:36,carbs:10,fat:24,fibre:3}},
+  {name:'Lentil Chorizo Soup',cuisine:'European & UK',serves:4,link:'https://www.bbcgoodfood.com/recipes/red-lentil-chorizo-soup',ingredients:['Red lentils','400g chopped tomatoes','Onion','Garlic','Chorizo','Chicken stock','Smoked paprika','Bay leaves'],instructions:['See link for full recipe.'],nutrition:{kcal:320,protein:18,carbs:34,fat:10,fibre:9}},
+  {name:'Hairy Bikers Sausage Casserole',cuisine:'European & UK',serves:12,link:'https://www.bbc.co.uk/food/recipes/great_sausage_casserole_73010',ingredients:['Sausages','400g chopped tomatoes','Onion','Garlic','Red peppers','Chicken stock','Smoked paprika','Bay leaves'],instructions:['See link for full recipe.'],nutrition:{kcal:360,protein:18,carbs:16,fat:24,fibre:3}},
+  {name:'Mass Chilli',cuisine:'American & Mexican',serves:8,link:'https://www.bbcgoodfood.com/recipes/chilli-crowd',ingredients:['1kg beef mince','2 cans kidney beans','400g chopped tomatoes','Onions','Garlic','Cumin','Chilli powder','Beef stock','Dark chocolate'],instructions:['See link for full recipe.'],nutrition:{kcal:480,protein:34,carbs:28,fat:22,fibre:9}},
+  {name:'Butternut Squash Curry',cuisine:'Asian',serves:4,link:'https://cupfulofkale.com/vegan-roasted-butternut-squash-and-chickpea-curry/',ingredients:['Butternut squash','1 can chickpeas','Coconut milk','400g chopped tomatoes','Onion','Garlic','Fresh ginger','Curry powder','Cumin','Ground coriander'],instructions:['See link for full recipe.'],nutrition:{kcal:280,protein:10,carbs:36,fat:10,fibre:8}},
+  {name:'Easy Paella',cuisine:'European & UK',serves:6,link:null,ingredients:['Paella rice','Mixed seafood','Chorizo','Saffron','Onion','Garlic','Mixed peppers','Chicken stock','Smoked paprika','Lemon'],instructions:['Dissolve saffron in warm stock.','Fry chorizo until crispy, remove. Fry onion and peppers.','Add garlic and paprika. Add rice and coat in oil.','Pour in all stock including saffron.','Cook uncovered 15 min without stirring.','Add seafood final 5 min. Rest 5 min, serve with lemon.'],nutrition:{kcal:480,protein:28,carbs:52,fat:14,fibre:3}},
+  {name:'Sourdough Tortillas',cuisine:'Bread',serves:8,link:'https://littlespoonfarm.com/sourdough-tortillas-recipe/',ingredients:['Sourdough starter','Plain flour','Water','Salt','Olive oil'],instructions:['See link for full recipe.'],nutrition:{kcal:120,protein:3,carbs:22,fat:2,fibre:1}},
+  {name:'Chocolate Chip Cookies',cuisine:'Baking',serves:24,link:'https://www.bbcgoodfood.com/recipes/vintage-chocolate-chip-cookies',ingredients:['Plain flour','Butter','Caster sugar','Brown sugar','Eggs','Chocolate chips','Vanilla extract','Bicarbonate of soda','Salt'],instructions:['See link for full recipe.'],nutrition:{kcal:180,protein:2,carbs:24,fat:9,fibre:1}},
+  {name:'Red Wine Rib-Eye Steak',cuisine:'Special Occasions',serves:2,link:'https://www.bbcgoodfood.com/recipes/rib-eye-steak-red-wine-pastrami-sauce',ingredients:['Rib-eye steak','Red wine','Beef stock','Shallots','Butter','Fresh thyme','Garlic'],instructions:['See link for full recipe.'],nutrition:{kcal:520,protein:42,carbs:4,fat:36,fibre:0}},
+  {name:'Pulled Pork',cuisine:'Special Occasions',serves:6,link:'https://www.bbcgoodfood.com/recipes/pulled-pork',ingredients:['Pork shoulder','Brown sugar','Smoked paprika','Cumin','Garlic powder','Cider vinegar','Chicken stock'],instructions:['See link for full recipe.'],nutrition:{kcal:420,protein:38,carbs:8,fat:24,fibre:0}},
+  {name:'Pulled Beef Brisket',cuisine:'Special Occasions',serves:6,link:'https://www.bbcgoodfood.com/recipes/pulled-beef-brisket',ingredients:['Beef brisket','Beef stock','Onion','Garlic','Tomato puree','Worcestershire sauce','Bay leaves','Smoked paprika'],instructions:['See link for full recipe.'],nutrition:{kcal:480,protein:40,carbs:6,fat:30,fibre:1}},
+
+  // ── 12-WEEK STRENGTH PROGRAMME ─────────────────────────────
+  {name:'Heavyweight Beef Bolognese',cuisine:'Strength Programme',serves:5,link:null,
+    ingredients:['1kg lean beef mince (5–10% fat)','2 × 400g cans crushed tomatoes or passata','1 large white onion','2 cloves garlic','1 beef stock cube','1 tbsp dried oregano','1 tbsp dried basil','1 tsp black pepper','1 tsp salt','1.2kg cooked basmati rice (240g per pot)'],
+    instructions:['Brown mince in a large pan over high heat with the finely diced onion and garlic.','Drain excess fat from the pan.','Crumble in the stock cube, add tomatoes and all spices. Stir well.','Simmer uncovered for 20 minutes until the sauce thickens.','Divide into 5 meal prep pots, each with 240g cooked rice.','Refrigerate for up to 4 days or freeze.'],
+    nutrition:{kcal:680,protein:42,carbs:72,fat:14,fibre:4}},
+
+  {name:'Broccoli Rule Chicken & Rice',cuisine:'Strength Programme',serves:5,link:null,
+    ingredients:['1.2kg chicken breast (diced into bite-sized chunks)','1 large bag frozen broccoli florets','1 tbsp olive oil','2 tbsp smoked paprika','2 tbsp garlic powder','1 tbsp onion powder','1 tsp black pepper','1 tsp salt','1.2kg cooked basmati rice (240g per pot)','Optional: lemon juice or light soy sauce'],
+    instructions:['Mix all dry rub spices together and coat the diced chicken thoroughly.','Heat olive oil in a large pan over medium-high heat.','Cook chicken for 8–10 minutes until cooked through with no pink remaining.','Steam or microwave broccoli florets until tender.','Divide into 5 meal prep pots, each with 240g rice and a portion of broccoli.','Add a squeeze of lemon juice or soy sauce if using. Refrigerate.'],
+    nutrition:{kcal:600,protein:48,carbs:68,fat:8,fibre:6}},
+
+  {name:'Peaking Turkey & Sweet Potato Skillet',cuisine:'Strength Programme',serves:5,link:null,
+    ingredients:['1kg turkey mince (5–7% fat)','1kg sweet potatoes (washed, skin-on, small cubes)','1 large bag frozen mixed vegetables (carrots, peas, sweetcorn)','1 tbsp olive oil','2 tbsp smoked paprika','1 tbsp garlic powder','1 tbsp onion powder','1 tsp dried oregano','Salt and black pepper to taste','Optional: splash of soy sauce or Worcestershire sauce'],
+    instructions:['Preheat oven to 200°C. Cube sweet potatoes skin-on and roast for 20–25 minutes until tender and slightly caramelised.','Heat olive oil in a large pan. Brown turkey mince with all the spices, breaking it up as it cooks.','Add the frozen mixed vegetables and cook through for 5 minutes.','Add optional soy sauce or Worcestershire for extra depth.','Combine the cooked turkey mixture with the roasted sweet potato.','Divide into 5 meal prep pots. Refrigerate up to 4 days or freeze.'],
+    nutrition:{kcal:430,protein:44,carbs:48,fat:9,fibre:8}},
+
+  {name:'Spiced Chickpea & Sweet Potato Curry',cuisine:'Strength Programme',serves:5,link:null,
+    ingredients:['2 × 400g cans chickpeas (drained and rinsed)','1kg sweet potatoes (cubed, skin-on)','1 × 400g can chopped tomatoes','400ml reduced-fat coconut milk','1 large onion (diced)','3 cloves garlic (diced)','1 tbsp olive oil','2 tbsp curry powder','1 tsp cumin','1 tsp turmeric','1 tsp smoked paprika','Salt and black pepper','1kg cooked basmati rice (200g per pot)','Optional: handful of fresh spinach'],
+    instructions:['Fry diced onion and garlic in olive oil over medium heat for 5 minutes until soft.','Add all spices and stir for 1 minute to bloom them.','Add cubed sweet potato, drained chickpeas, chopped tomatoes, and coconut milk. Stir well.','Simmer for 25 minutes until sweet potato is completely tender.','Stir in fresh spinach at the end if using, until wilted.','Divide into 5 meal prep pots, each with 200g cooked rice. Refrigerate up to 4 days or freeze.'],
+    nutrition:{kcal:500,protein:22,carbs:80,fat:10,fibre:12}},
+
+  {name:'Red Lentil Dahl & Basmati Rice',cuisine:'Strength Programme',serves:5,link:null,
+    ingredients:['500g red lentils (rinsed thoroughly)','2 × 400g cans chopped tomatoes','1 large onion (diced)','4 cloves garlic (diced)','1 tbsp olive oil','1.5 litres vegetable stock','2 tsp ground cumin','2 tsp ground coriander','1 tsp turmeric','1 tsp garam masala','1 tsp chilli flakes (optional)','Salt to taste','1kg cooked basmati rice (200g per pot)','Squeeze of lemon juice to finish'],
+    instructions:['Fry diced onion and garlic in olive oil for 5 minutes until softened.','Add all spices and cook for 1 minute, stirring constantly.','Add rinsed lentils, chopped tomatoes, and vegetable stock. Stir well.','Bring to the boil then reduce to a simmer. Cook 25–30 minutes, stirring regularly, until thick and lentils are soft.','Squeeze in lemon juice and season to taste.','Divide into 5 meal prep pots, each with 200g cooked rice. Refrigerate up to 4 days or freeze.'],
+    nutrition:{kcal:480,protein:24,carbs:78,fat:5,fibre:14}},
+];
+
+/* ── SHARED HELPERS ──────────────────────────────────────── */
+function Sel({value,onChange,options}){
+  return <select className={'hl-sel'+(value&&!SKIP.includes(value)?' ok':'')} value={value||''} onChange={e=>onChange(e.target.value)}>
+    <option value=''>— Select —</option>
+    {options.map(o=><option key={o} value={o}>{o}</option>)}
+  </select>;
+}
+
+/* Searchable dropdown — portal-based so it's never clipped, mobile bottom sheet */
+function SearchSel({value,onChange,options,placeholder}){
+  const[open,setOpen]=useState(false);
+  const[query,setQuery]=useState('');
+  const[focusIdx,setFocusIdx]=useState(0);
+  const[panelStyle,setPanelStyle]=useState({});
+  const[isMobile,setIsMobile]=useState(false);
+  const triggerRef=useRef(null);
+  const inputRef=useRef(null);
+  const listRef=useRef(null);
+  const portalRoot=typeof document!=='undefined'?document.body:null;
+
+  const ph=placeholder||'— Select —';
+  const hasVal=value&&value!=='';
+  const isRecipe=hasVal&&!SKIP_RECIPE.includes(value);
+
+  const filtered=useMemo(()=>{
+    const q=query.trim().toLowerCase();
+    if(!q)return options;
+    return options.filter(o=>o.toLowerCase().includes(q));
+  },[options,query]);
+
+  // Detect mobile (touch device or narrow screen)
+  useEffect(()=>{
+    const check=()=>setIsMobile(window.innerWidth<640||'ontouchstart' in window);
+    check();
+    window.addEventListener('resize',check);
+    return()=>window.removeEventListener('resize',check);
+  },[]);
+
+  // Position the portal panel relative to trigger, opening up if near bottom
+  const positionPanel=useCallback(()=>{
+    if(!triggerRef.current)return;
+    const rect=triggerRef.current.getBoundingClientRect();
+    const viewH=window.innerHeight;
+    const panelH=260; // approx max height
+    const spaceBelow=viewH-rect.bottom-8;
+    const spaceAbove=rect.top-8;
+    const goUp=spaceBelow<panelH&&spaceAbove>spaceBelow;
+    const width=Math.max(rect.width,240);
+    const left=Math.min(rect.left,window.innerWidth-width-8);
+    if(goUp){
+      setPanelStyle({bottom:viewH-rect.top+4,left,width,maxHeight:Math.min(spaceAbove,280)});
+    } else {
+      setPanelStyle({top:rect.bottom+4,left,width,maxHeight:Math.min(spaceBelow,280)});
+    }
+  },[]);
+
+  useEffect(()=>{
+    if(open&&!isMobile){
+      positionPanel();
+      const onScroll=()=>positionPanel();
+      window.addEventListener('scroll',onScroll,true);
+      window.addEventListener('resize',onScroll);
+      return()=>{window.removeEventListener('scroll',onScroll,true);window.removeEventListener('resize',onScroll);};
+    }
+  },[open,isMobile,positionPanel]);
+
+  // Focus input when panel opens
+  useEffect(()=>{
+    if(open){
+      setQuery('');setFocusIdx(0);
+      setTimeout(()=>inputRef.current?.focus(),50);
+    }
+  },[open]);
+
+  // Scroll focused item into view
+  useEffect(()=>{
+    if(open&&listRef.current){
+      const el=listRef.current.querySelector('.focused');
+      if(el)el.scrollIntoView({block:'nearest'});
+    }
+  },[focusIdx,open]);
+
+  // Close on outside click
+  useEffect(()=>{
+    if(!open)return;
+    const handler=(e)=>{
+      if(triggerRef.current&&triggerRef.current.contains(e.target))return;
+      // Check if click is inside the portal panel (by class)
+      if(e.target.closest('.hl-sdd-panel,.hl-sdd-sheet'))return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown',handler);
+    document.addEventListener('touchstart',handler);
+    return()=>{document.removeEventListener('mousedown',handler);document.removeEventListener('touchstart',handler);};
+  },[open]);
+
+  const select=(opt)=>{onChange(opt==='__clear__'?'':opt);setOpen(false);};
+
+  const onKeyDown=(e)=>{
+    if(e.key==='Escape'){setOpen(false);return;}
+    if(e.key==='ArrowDown'){e.preventDefault();setFocusIdx(i=>Math.min(i+1,filtered.length-1));return;}
+    if(e.key==='ArrowUp'){e.preventDefault();setFocusIdx(i=>Math.max(i-1,0));return;}
+    if(e.key==='Enter'&&filtered[focusIdx]!==undefined){e.preventDefault();select(filtered[focusIdx]);return;}
+  };
+
+  const panel = isMobile ? (
+    <>
+      <div className='hl-sdd-backdrop' onClick={()=>setOpen(false)}/>
+      <div className='hl-sdd-sheet'>
+        <div className='hl-sdd-sheet-hdr'>
+          <input ref={inputRef} type='text' placeholder='Search meals…' value={query}
+            onChange={e=>{setQuery(e.target.value);setFocusIdx(0);}}
+            onKeyDown={onKeyDown}/>
+          <button className='hl-sdd-clear' onClick={()=>setOpen(false)}>✕</button>
+        </div>
+        <div className='hl-sdd-sheet-list'>
+          <div className={'hl-sdd-sheet-opt placeholder'+(!value?' selected':'')} onClick={()=>select('__clear__')}>{ph}</div>
+          {filtered.length===0
+            ?<div className='hl-sdd-sheet-empty'>No matches for "{query}"</div>
+            :filtered.map((opt)=>(
+              <div key={opt} className={'hl-sdd-sheet-opt'+(opt===value?' selected':'')} onClick={()=>select(opt)}>{opt}</div>
+            ))
+          }
+        </div>
+      </div>
+    </>
+  ) : (
+    <div className='hl-sdd-panel' style={panelStyle}>
+      <div className='hl-sdd-search'>
+        <span style={{fontSize:12,color:'#C8BFA8'}}>🔍</span>
+        <input ref={inputRef} type='text' placeholder='Search meals…' value={query}
+          onChange={e=>{setQuery(e.target.value);setFocusIdx(0);}}
+          onKeyDown={onKeyDown}/>
+        {query&&<button className='hl-sdd-clear' onClick={()=>{setQuery('');setFocusIdx(0);inputRef.current?.focus();}}>✕</button>}
+      </div>
+      <div className='hl-sdd-list' ref={listRef} style={{maxHeight:panelStyle.maxHeight?panelStyle.maxHeight-48:220,overflowY:'auto'}}>
+        <div className={'hl-sdd-opt placeholder'+(!value?' selected':'')} onClick={()=>select('__clear__')}>{ph}</div>
+        {filtered.length===0
+          ?<div className='hl-sdd-empty'>No matches for "{query}"</div>
+          :filtered.map((opt,i)=>(
+            <div key={opt}
+              className={'hl-sdd-opt'+(opt===value?' selected':'')+(i===focusIdx?' focused':'')}
+              onMouseEnter={()=>setFocusIdx(i)}
+              onClick={()=>select(opt)}>
+              {opt}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  );
+
+  return(
+    <div className='hl-sdd' ref={triggerRef}>
+      <button type='button' className={'hl-sdd-trigger'+(isRecipe?' ok':'')}
+        onClick={()=>setOpen(o=>!o)}>
+        {hasVal?value:ph}
+      </button>
+      {open&&portalRoot&&ReactDOM.createPortal(panel,portalRoot)}
+    </div>
+  );
+}
+function MacroBar({protein,carbs,fat}){
+  const t=(protein*4)+(carbs*4)+(fat*9)||1;
+  return <div className='hl-mbar-wrap'>
+    <div className='hl-mbar-p' style={{width:Math.round(protein*4/t*100)+'%'}}/>
+    <div className='hl-mbar-c' style={{width:Math.round(carbs*4/t*100)+'%'}}/>
+    <div className='hl-mbar-f' style={{width:Math.round(fat*9/t*100)+'%'}}/>
+  </div>;
+}
+
+/* ── STEPS MODAL ─────────────────────────────────────────── */
+function StepsModal({recipe,onClose}){
+  return <div className='hl-ov' onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div className='hl-smodal'>
+      <div className='hl-smodal-hdr'><h2>{recipe.name}</h2><button className='hl-close' onClick={onClose}>✕</button></div>
+      <div className='hl-smodal-body'>
+        {recipe.instructions?.length>0
+          ? recipe.instructions.map((s,i)=><div key={i} className='hl-step'><div className='hl-step-num'>{i+1}</div><div className='hl-step-text'>{s}</div></div>)
+          : <div className='hl-no-steps'>No instructions added yet.{recipe.link&&<> <a className='hl-rl' href={recipe.link} target='_blank' rel='noopener noreferrer'>View original recipe ↗</a></>}</div>}
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── RECIPE DETAIL / EDIT MODAL ──────────────────────────── */
+function RecipeModal({recipe,onClose,onSave,onDelete}){
+  const[editing,setEditing]=useState(false);
+  const[confirmDelete,setConfirmDelete]=useState(false);
+  const[form,setForm]=useState({
+    name:recipe.name,cuisine:recipe.cuisine,serves:String(recipe.serves||''),link:recipe.link||'',
+    ingredients:(recipe.ingredients||[]).join('\n'),instructions:(recipe.instructions||[]).join('\n'),
+    kcal:String(recipe.nutrition?.kcal||''),protein:String(recipe.nutrition?.protein||''),
+    carbs:String(recipe.nutrition?.carbs||''),fat:String(recipe.nutrition?.fat||''),fibre:String(recipe.nutrition?.fibre||''),
+  });
+  const upd=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const save=()=>{
+    const ings=form.ingredients.split('\n').map(s=>s.trim()).filter(Boolean);
+    const instr=form.instructions.split('\n').map(s=>s.trim()).filter(Boolean);
+    const hasNut=form.kcal||form.protein||form.carbs||form.fat;
+    const nut=hasNut?{kcal:+form.kcal||0,protein:+form.protein||0,carbs:+form.carbs||0,fat:+form.fat||0,fibre:+form.fibre||0}:null;
+    onSave({...recipe,name:form.name.trim(),cuisine:form.cuisine,serves:+form.serves||recipe.serves,link:form.link.trim()||null,ingredients:ings,instructions:instr,nutrition:nut});
+    onClose();
+  };
+  return <div className='hl-ov' onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div className='hl-rmodal'>
+      <div className='hl-rmodal-hdr'>
+        <div>
+          <div className='hl-rmodal-title'>{recipe.name}</div>
+          <div className='hl-rmodal-meta'>
+            {recipe.serves&&<span className='hl-sp'>Serves {recipe.serves}</span>}
+            <span style={{fontSize:10,color:'#8CAD78'}}>{recipe.cuisine}</span>
+            {recipe.custom&&<span className='hl-cbadge'>Custom</span>}
+          </div>
+        </div>
+        <button className='hl-close' onClick={onClose}>✕</button>
+      </div>
+      <div className='hl-rmodal-body'>
+        {editing?(
+          <div className='hl-fgrid'>
+            <div className='hl-ffull'><label className='hl-flabel'>Name</label><input className='hl-finput' value={form.name} onChange={e=>upd('name',e.target.value)}/></div>
+            <div><label className='hl-flabel'>Cuisine</label><select className='hl-fsel' value={form.cuisine} onChange={e=>upd('cuisine',e.target.value)}>{CUISINES.slice(1).map(c=><option key={c}>{c}</option>)}</select></div>
+            <div><label className='hl-flabel'>Serves</label><input className='hl-finput' type='number' value={form.serves} onChange={e=>upd('serves',e.target.value)}/></div>
+            <div className='hl-ffull'><label className='hl-flabel'>Recipe URL</label><input className='hl-finput' value={form.link} onChange={e=>upd('link',e.target.value)} placeholder='https://...'/></div>
+            <div className='hl-ffull'><label className='hl-flabel'>Ingredients (one per line)</label><textarea className='hl-fta' value={form.ingredients} onChange={e=>upd('ingredients',e.target.value)} style={{minHeight:100}}/></div>
+            <div className='hl-ffull'><label className='hl-flabel'>Instructions (one step per line)</label><textarea className='hl-fta' value={form.instructions} onChange={e=>upd('instructions',e.target.value)} style={{minHeight:120}}/></div>
+            <div className='hl-ffull hl-nut-section'>
+              <h3>Nutrition per Serving</h3><p>Optional</p>
+              <div className='hl-nut-grid'>
+                {[['Calories','kcal'],['Protein (g)','protein'],['Carbs (g)','carbs'],['Fat (g)','fat'],['Fibre (g)','fibre']].map(([l,k])=>(
+                  <div key={k}><label className='hl-flabel'>{l}</label><input className='hl-finput' type='number' min='0' value={form[k]} onChange={e=>upd(k,e.target.value)}/></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ):(
+          <>
+            {recipe.nutrition&&<div><div className='hl-sec-title'>Nutrition per Serving</div>
+              <div className='hl-nut-row'>
+                <div className='hl-macro'><span className='hl-macro-val c-k'>{recipe.nutrition.kcal}</span><span className='hl-macro-lbl'>kcal</span></div>
+                <div className='hl-macro'><span className='hl-macro-val c-p'>{recipe.nutrition.protein}g</span><span className='hl-macro-lbl'>protein</span></div>
+                <div className='hl-macro'><span className='hl-macro-val c-c'>{recipe.nutrition.carbs}g</span><span className='hl-macro-lbl'>carbs</span></div>
+                <div className='hl-macro'><span className='hl-macro-val c-f'>{recipe.nutrition.fat}g</span><span className='hl-macro-lbl'>fat</span></div>
+                {recipe.nutrition.fibre>0&&<div className='hl-macro'><span className='hl-macro-val c-fi'>{recipe.nutrition.fibre}g</span><span className='hl-macro-lbl'>fibre</span></div>}
+              </div>
+            </div>}
+            {recipe.ingredients?.length>0&&<div><div className='hl-sec-title'>Ingredients (serves {recipe.serves})</div>
+              <div className='hl-ing-grid'>{recipe.ingredients.map((ing,i)=><div key={i} className='hl-ing-item'>{ing}</div>)}</div>
+            </div>}
+            {recipe.instructions?.length>0&&<div><div className='hl-sec-title'>Method</div>
+              {recipe.instructions.map((s,i)=><div key={i} className='hl-step'><div className='hl-step-num'>{i+1}</div><div className='hl-step-text'>{s}</div></div>)}
+            </div>}
+            {recipe.link&&<a className='hl-rl' href={recipe.link} target='_blank' rel='noopener noreferrer'>↗ View original recipe</a>}
+          </>
+        )}
+      </div>
+      <div className='hl-rmodal-footer'>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          {!editing&&!confirmDelete&&(
+            <button className='hl-btn-del' onClick={()=>setConfirmDelete(true)}>🗑 Delete Recipe</button>
+          )}
+          {confirmDelete&&(
+            <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+              <span style={{fontSize:12,color:'#C4784A',fontFamily:"'Lora',serif",fontStyle:'italic'}}>Sure? This can{recipe.custom?'not':''} be restored{recipe.custom?'':' from Settings'}.</span>
+              <button className='hl-btn-del' style={{background:'#C4784A',color:'white'}} onClick={()=>{onDelete(recipe.name);onClose();}}>Yes, delete</button>
+              <button className='hl-btn-cancel' onClick={()=>setConfirmDelete(false)}>Cancel</button>
+            </div>
+          )}
+          {editing&&<button className='hl-btn-cancel' onClick={()=>setEditing(false)}>Cancel</button>}
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          {!confirmDelete&&(editing?<button className='hl-btn-save' onClick={save}>Save Changes ✓</button>:<button className='hl-btn-edit' onClick={()=>setEditing(true)}>✏️ Edit Recipe</button>)}
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── IMPORT MODAL ────────────────────────────────────────── */
+function ImportModal({onClose,onAdd}){
+  const[url,setUrl]=useState('');
+  const[status,setStatus]=useState(null);
+  const[loading,setLoading]=useState(false);
+  const[form,setForm]=useState({name:'',cuisine:'European & UK',serves:'4',link:'',ingredients:'',instructions:'',kcal:'',protein:'',carbs:'',fat:'',fibre:''});
+  const upd=(k,v)=>setForm(f=>({...f,[k]:v}));
+
+  function parseLD(html){
+    const re=/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+    let m;
+    while((m=re.exec(html))!==null){
+      try{
+        const d=JSON.parse(m[1]);
+        const items=Array.isArray(d)?d:(d['@graph']||[d]);
+        for(const item of items){
+          const t=item['@type'];
+          if(t==='Recipe'||(Array.isArray(t)&&t.includes('Recipe')))return item;
+        }
+      }catch(e){}
+    }
+    return null;
+  }
+
+  const fetchFromUrl=async()=>{
+    if(!url.trim()){setStatus({type:'error',msg:'Please enter a URL.'});return;}
+    setLoading(true);setStatus({type:'loading',msg:'Reading recipe data from page…'});
+    try{
+      const res=await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url.trim())}`);
+      const data=await res.json();
+      if(!data.contents)throw new Error('no content');
+      const r=parseLD(data.contents);
+      if(!r)throw new Error('no schema');
+      const pn=v=>{if(!v)return'';const mx=String(v).match(/[\d.]+/);return mx?String(Math.round(parseFloat(mx[0]))):'';}
+      const yld=r.recipeYield;let serves='4';
+      if(yld){const n=Array.isArray(yld)?yld[0]:yld;const mx=String(n).match(/\d+/);if(mx)serves=mx[0];}
+      const ings=(r.recipeIngredient||[]).map(i=>String(i).trim()).filter(Boolean);
+      let instr=[];
+      const ri=r.recipeInstructions;
+      if(ri){
+        if(typeof ri==='string'){instr=ri.split('\n').map(s=>s.trim()).filter(Boolean);}
+        else if(Array.isArray(ri)){
+          ri.forEach(s=>{
+            if(typeof s==='string')instr.push(s.trim());
+            else if(s.text)instr.push(s.text.trim());
+            else if(s.itemListElement)s.itemListElement.forEach(ss=>instr.push((ss.text||'').trim()));
+          });
+          instr=instr.filter(Boolean);
+        }
+      }
+      const nt=r.nutrition;
+      setForm({name:r.name||'',cuisine:'European & UK',serves,link:url.trim(),
+        ingredients:ings.join('\n'),instructions:instr.join('\n'),
+        kcal:nt?pn(nt.calories):'',protein:nt?pn(nt.proteinContent):'',
+        carbs:nt?pn(nt.carbohydrateContent):'',fat:nt?pn(nt.fatContent):'',
+        fibre:nt?pn(nt.fiberContent||nt.fibreContent):'',
+      });
+      const parts=[];
+      if(ings.length)parts.push(`${ings.length} ingredients`);
+      if(instr.length)parts.push(`${instr.length} steps`);
+      if(nt)parts.push('nutrition');
+      setStatus({type:'info',msg:`✓ Found: ${parts.join(', ')}. Set the cuisine and save.`});
+    }catch(e){
+      setStatus({type:'error',msg:"This site doesn't publish structured recipe data. Fill in the details manually below."});
+    }
+    setLoading(false);
+  };
+
+  const save=()=>{
+    if(!form.name.trim()){setStatus({type:'error',msg:'Please enter a recipe name.'});return;}
+    const ings=form.ingredients.split('\n').map(s=>s.trim()).filter(Boolean);
+    const instr=form.instructions.split('\n').map(s=>s.trim()).filter(Boolean);
+    const hasNut=form.kcal||form.protein||form.carbs||form.fat;
+    const nut=hasNut?{kcal:+form.kcal||0,protein:+form.protein||0,carbs:+form.carbs||0,fat:+form.fat||0,fibre:+form.fibre||0}:null;
+    onAdd({name:form.name.trim(),cuisine:form.cuisine,serves:+form.serves||4,link:form.link.trim()||null,ingredients:ings,instructions:instr,nutrition:nut,custom:true});
+    onClose();
+  };
+
+  return <div className='hl-ov' onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div className='hl-imodal'>
+      <div className='hl-imodal-hdr'><h2>Import a Recipe</h2><button className='hl-close' onClick={onClose}>✕</button></div>
+      <div className='hl-imodal-body'>
+        <div className='hl-url-row'>
+          <input className='hl-url-input' type='url' placeholder='Paste recipe URL…' value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==='Enter'&&fetchFromUrl()}/>
+          <button className='hl-fetch-btn' onClick={fetchFromUrl} disabled={loading}>{loading?'Reading…':'🔗 Import from URL'}</button>
+        </div>
+        <p className='hl-fetch-note'>Works with BBC Good Food, AllRecipes, Serious Eats and most recipe sites.</p>
+        {status&&<div className={`hl-status ${status.type}`}>{status.msg}</div>}
+        <div className='hl-fgrid'>
+          <div className='hl-ffull'><label className='hl-flabel'>Recipe Name *</label><input className='hl-finput' value={form.name} onChange={e=>upd('name',e.target.value)} placeholder='e.g. Lemon Herb Salmon'/></div>
+          <div><label className='hl-flabel'>Cuisine</label><select className='hl-fsel' value={form.cuisine} onChange={e=>upd('cuisine',e.target.value)}>{CUISINES.slice(1).map(c=><option key={c}>{c}</option>)}</select></div>
+          <div><label className='hl-flabel'>Serves</label><input className='hl-finput' type='number' value={form.serves} onChange={e=>upd('serves',e.target.value)}/></div>
+          <div className='hl-ffull'><label className='hl-flabel'>Ingredients (one per line)</label><textarea className='hl-fta' value={form.ingredients} onChange={e=>upd('ingredients',e.target.value)} placeholder={'500g chicken\n2 garlic cloves'}/></div>
+          <div className='hl-ffull'><label className='hl-flabel'>Instructions (one step per line)</label><textarea className='hl-fta' value={form.instructions} onChange={e=>upd('instructions',e.target.value)} placeholder={'Preheat oven…\nMix ingredients…'}/></div>
+          <div className='hl-ffull hl-nut-section'>
+            <h3>Nutrition per Serving</h3><p>Optional — leave blank if unknown</p>
+            <div className='hl-nut-grid'>
+              {[['Calories','kcal'],['Protein (g)','protein'],['Carbs (g)','carbs'],['Fat (g)','fat'],['Fibre (g)','fibre']].map(([l,k])=>(
+                <div key={k}><label className='hl-flabel'>{l}</label><input className='hl-finput' type='number' min='0' value={form[k]} onChange={e=>upd(k,e.target.value)}/></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className='hl-imodal-footer'>
+        <button className='hl-btn-cancel' onClick={onClose}>Cancel</button>
+        <button className='hl-btn-primary' onClick={save}>Save Recipe ✓</button>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ── MEAL PLAN ───────────────────────────────────────────── */
+function MealPlan({plan,setPlan,allRecipes,onViewSteps}){
+  const allNames=['Eating Out','Leftovers',...allRecipes.map(r=>r.name).sort()];
+  const lunchOpts=['Eating Out','Leftovers','Chicken','Soup','Salad','Sandwich','Jacket Potato','Omelette',...allRecipes.map(r=>r.name).sort()];
+  const upd=(day,slot,val)=>setPlan(p=>{
+    // When meal changes, remove from addToList — new meal defaults to not adding ingredients
+    const k=`${day}_${slot}`;
+    const cur=p.addToList||[];
+    return{...p,[day]:{...p[day],[slot]:val},addToList:cur.filter(s=>s!==k)};
+  });
+  const getRec=name=>name&&!SKIP_RECIPE.includes(name)?allRecipes.find(r=>r.name===name):null;
+  const bulkCook=plan.bulkCook||[];
+  const addToList=plan.addToList||[];
+  const slotKey=(day,slot)=>`${day}_${slot}`;
+  const isBulk=name=>name&&bulkCook.includes(name);
+  const isAdded=(day,slot)=>addToList.includes(slotKey(day,slot));
+  const toggleBulk=name=>{
+    const cur=plan.bulkCook||[];
+    const next=cur.includes(name)?cur.filter(n=>n!==name):[...cur,name];
+    setPlan(p=>({...p,bulkCook:next}));
+  };
+  const toggleAddToList=(day,slot)=>{
+    const k=slotKey(day,slot);
+    const cur=plan.addToList||[];
+    const next=cur.includes(k)?cur.filter(s=>s!==k):[...cur,k];
+    setPlan(p=>({...p,addToList:next}));
+  };
+
+  function MealHint({rec,day,slot}){
+    if(!rec)return null;
+    const bulk=isBulk(rec.name);
+    const added=isAdded(day,slot);
+    return <div className='hl-meal-hint'>
+      {rec.nutrition&&<span className='hl-nut-hint'><span>🔥{rec.nutrition.kcal}</span><span>P{rec.nutrition.protein}g</span><span>C{rec.nutrition.carbs}g</span></span>}
+      <button className='hl-steps-btn' onClick={()=>onViewSteps(rec)}>📋 Steps</button>
+      <button className={'hl-skip-btn'+(added?' on':'')} onClick={()=>toggleAddToList(day,slot)}>
+        🛒 {added?'On list ✓':'Add to list'}
+      </button>
+      {added&&<button className={'hl-bulk-btn'+(bulk?' on':'')} onClick={()=>toggleBulk(rec.name)}>
+        🧊 {bulk?'Bulk cook ✓':'Bulk cook?'}
+      </button>}
+    </div>;
+  }
+
+  return <div>
+    <div className='hl-row'>
+      <div>
+        <h1 className='hl-h1'>This Week's Plan</h1>
+        <p className='hl-sub'>Select meals · tap 🛒 Add to list to include ingredients in shopping</p>
+      </div>
+      <button className='hl-clr' onClick={()=>setPlan({...DEF_PLAN})}>✕ Clear all</button>
+    </div>
+    <div className='hl-pgrid'>
+
+      {/* ── EVENING MEALS ── */}
+      <div className='hl-card'>
+        <div className='hl-cardh'>🍽️ Evening Meals</div>
+        <table className='hl-pt hl-desktop-only' style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead><tr><th>Day</th><th>Dinner</th></tr></thead>
+          <tbody>{DAYS.map(d=>{
+            const rec=getRec(plan[d].dinner);
+            return <tr key={d}><td className='hl-dlbl'>{d}</td><td>
+              <SearchSel value={plan[d].dinner} onChange={v=>upd(d,'dinner',v)} options={allNames}/>
+              <MealHint rec={rec} day={d} slot="dinner"/>
+            </td></tr>;
+          })}</tbody>
+        </table>
+        <div className='hl-mobile-only'>
+          {DAYS.map(d=>{const rec=getRec(plan[d].dinner);return <div key={d} className='hl-mob-day'>
+            <div className='hl-mob-daylbl'>{d}</div>
+            <SearchSel value={plan[d].dinner} onChange={v=>upd(d,'dinner',v)} options={allNames}/>
+            <MealHint rec={rec} day={d} slot="dinner"/>
+          </div>;})}
+        </div>
+      </div>
+
+      {/* ── LUNCHES ── */}
+      <div className='hl-card'>
+        <div className='hl-cardh'>🥗 Lunches</div>
+        <table className='hl-pt hl-desktop-only' style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead><tr><th>Day</th><th>Alex</th><th>Sam</th></tr></thead>
+          <tbody>{DAYS.map(d=>{
+            const ra=getRec(plan[d].alex),rg=getRec(plan[d].sam);
+            return <tr key={d}><td className='hl-dlbl'>{d}</td>
+              <td><SearchSel value={plan[d].alex} onChange={v=>upd(d,'alex',v)} options={lunchOpts}/><MealHint rec={ra} day={d} slot="alex"/></td>
+              <td><SearchSel value={plan[d].sam} onChange={v=>upd(d,'sam',v)} options={lunchOpts}/><MealHint rec={rg} day={d} slot="sam"/></td>
+            </tr>;
+          })}</tbody>
+        </table>
+        <div className='hl-mobile-only'>
+          {DAYS.map(d=>{
+            const ra=getRec(plan[d].alex),rg=getRec(plan[d].sam);
+            return <div key={d} className='hl-mob-day'>
+              <div className='hl-mob-daylbl'>{d}</div>
+              <div className='hl-mob-slot'>
+                <div className='hl-mob-slotlbl'>Alex</div>
+                <SearchSel value={plan[d].alex} onChange={v=>upd(d,'alex',v)} options={lunchOpts}/>
+                <MealHint rec={ra} day={d} slot="alex"/>
+              </div>
+              <div className='hl-mob-slot'>
+                <div className='hl-mob-slotlbl'>Sam</div>
+                <SearchSel value={plan[d].sam} onChange={v=>upd(d,'sam',v)} options={lunchOpts}/>
+                <MealHint rec={rg} day={d} slot="sam"/>
+              </div>
+            </div>;
+          })}
+        </div>
+      </div>
+
+    </div>
+
+    {addToList.length>0&&(
+      <div style={{marginTop:16,padding:'10px 14px',background:'#EAF2E5',borderRadius:10,border:'1px solid #C4DEB8',fontSize:12,fontFamily:"'DM Sans',sans-serif",color:'#2A4A1E',display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+        <span style={{fontWeight:600}}>🛒 Adding to shopping list:</span>
+        {[...new Set(DAYS.flatMap(d=>['dinner','alex','sam'].filter(s=>isAdded(d,s)).map(s=>plan[d][s]).filter(Boolean)))].map(n=><span key={n} style={{background:'#2A4A1E',color:'white',borderRadius:20,padding:'2px 10px',fontSize:11}}>{n}</span>)}
+        {bulkCook.length>0&&<span style={{fontSize:11,color:'#5B7A35',marginLeft:4}}>· 🧊 bulk cooking: {bulkCook.join(', ')}</span>}
+      </div>
+    )}
+  </div>;
+}
+
+/* ── RECIPES TAB ─────────────────────────────────────────── */
+function RecipesTab({allRecipes,onImport,onSave,onDelete,deletedRecipes,onRestore}){
+  const[cuisine,setCuisine]=useState('All');
+  const[showImport,setShowImport]=useState(false);
+  const[selected,setSelected]=useState(null);
+  const[search,setSearch]=useState('');
+  const[sort,setSort]=useState('alpha-asc');
+
+  const filtered=useMemo(()=>{
+    let list=allRecipes;
+    // cuisine filter
+    if(cuisine!=='All')list=list.filter(r=>r.cuisine===cuisine);
+    // search filter
+    if(search.trim()){
+      const q=search.toLowerCase();
+      list=list.filter(r=>r.name.toLowerCase().includes(q)||(r.ingredients||[]).some(i=>i.toLowerCase().includes(q)));
+    }
+    // sort
+    list=[...list];
+    if(sort==='alpha-asc')list.sort((a,b)=>a.name.localeCompare(b.name));
+    else if(sort==='alpha-desc')list.sort((a,b)=>b.name.localeCompare(a.name));
+    else if(sort==='cuisine')list.sort((a,b)=>a.cuisine.localeCompare(b.cuisine)||a.name.localeCompare(b.name));
+    else if(sort==='kcal-asc')list.sort((a,b)=>(a.nutrition?.kcal||0)-(b.nutrition?.kcal||0));
+    else if(sort==='kcal-desc')list.sort((a,b)=>(b.nutrition?.kcal||0)-(a.nutrition?.kcal||0));
+    else if(sort==='custom-first')list.sort((a,b)=>(b.custom?1:0)-(a.custom?1:0)||a.name.localeCompare(b.name));
+    return list;
+  },[allRecipes,cuisine,search,sort]);
+
+  return <div>
+    {showImport&&<ImportModal onClose={()=>setShowImport(false)} onAdd={r=>{onImport(r);}}/>}
+    {selected&&<RecipeModal recipe={selected} onClose={()=>setSelected(null)} onSave={r=>{onSave(r);setSelected(null);}} onDelete={n=>{onDelete(n);setSelected(null);}}/>}
+    <div className='hl-recipe-top'>
+      <div><h1 className='hl-h1'>Recipe Collection</h1><p className='hl-sub'>Click any card to view full details and edit</p></div>
+      <button className='hl-import-btn' onClick={()=>setShowImport(true)}>+ Import Recipe</button>
+    </div>
+    <div className='hl-ctabs'>{CUISINES.map(c=><button key={c} className={'hl-ct'+(cuisine===c?' on':'')} onClick={()=>setCuisine(c)}>{c}</button>)}</div>
+    <div className='hl-recipe-controls'>
+      <input className='hl-search' type='text' placeholder='🔍 Search recipes or ingredients…' value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className='hl-sort-sel' value={sort} onChange={e=>setSort(e.target.value)}>
+        <option value='alpha-asc'>A → Z</option>
+        <option value='alpha-desc'>Z → A</option>
+        <option value='cuisine'>By cuisine</option>
+        <option value='kcal-asc'>Calories: low → high</option>
+        <option value='kcal-desc'>Calories: high → low</option>
+        <option value='custom-first'>Custom recipes first</option>
+      </select>
+      <span className='hl-recipe-count'>{filtered.length} recipe{filtered.length!==1?'s':''}</span>
+    </div>
+    <div className='hl-rgrid'>
+      {filtered.length===0&&<div style={{gridColumn:'1/-1',textAlign:'center',padding:'32px',fontFamily:"'Lora',serif",fontStyle:'italic',color:'#9A8E7A'}}>No recipes match your search.</div>}
+      {filtered.map((r,i)=>(
+        <div key={r.name+i} className={'hl-rc'+(r.custom?' custom':'')} onClick={()=>setSelected(r)}>
+          <div className='hl-rn'>{r.name}{r.custom&&<span className='hl-cbadge' style={{marginLeft:6}}>Custom</span>}</div>
+          <div className='hl-rm'>
+            {r.serves&&<span className='hl-sp'>Serves {r.serves}</span>}
+            <span style={{fontSize:10,color:'#9A8E7A'}}>{r.cuisine}</span>
+            {r.instructions?.length>1&&<span style={{fontSize:10,color:'#8CAD78'}}>📋 {r.instructions.length} steps</span>}
+          </div>
+          {r.nutrition&&<div className='hl-nut-row'>
+            <div className='hl-macro'><span className='hl-macro-val c-k'>{r.nutrition.kcal}</span><span className='hl-macro-lbl'>kcal</span></div>
+            <div className='hl-macro'><span className='hl-macro-val c-p'>{r.nutrition.protein}g</span><span className='hl-macro-lbl'>prot</span></div>
+            <div className='hl-macro'><span className='hl-macro-val c-c'>{r.nutrition.carbs}g</span><span className='hl-macro-lbl'>carbs</span></div>
+            <div className='hl-macro'><span className='hl-macro-val c-f'>{r.nutrition.fat}g</span><span className='hl-macro-lbl'>fat</span></div>
+          </div>}
+          {r.ingredients?.length>0&&<div style={{fontSize:11,color:'#7A6B52',lineHeight:1.5}}><strong style={{color:'#2A4A1E'}}>Key: </strong>{r.ingredients.slice(0,4).join(', ')}{r.ingredients.length>4?' …':''}</div>}
+        </div>
+      ))}
+    </div>
+
+    {deletedRecipes.length>0&&<div style={{marginTop:32}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+        <span style={{fontFamily:"'Playfair Display',serif",fontSize:16,color:'#9A8E7A'}}>🗑 Deleted Recipes</span>
+        <span style={{fontSize:11,fontFamily:"'Lora',serif",fontStyle:'italic',color:'#B0A490'}}>{deletedRecipes.length} hidden — click to restore</span>
+      </div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+        {deletedRecipes.map(name=>(
+          <div key={name} style={{background:'white',border:'1.5px dashed #D0C8B8',borderRadius:10,padding:'7px 14px',display:'flex',alignItems:'center',gap:10,opacity:.7}}>
+            <span style={{fontSize:13,color:'#7A6B52'}}>{name}</span>
+            <button onClick={()=>onRestore(name)} style={{background:'#EAF2E5',border:'none',color:'#3A6B2A',borderRadius:6,padding:'3px 10px',fontSize:11,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Restore</button>
+          </div>
+        ))}
+      </div>
+    </div>}
+  </div>;
+}
+
+// Scale an ingredient string by a multiplier
+// e.g. "500g beef mince" × 2 → "1kg beef mince"
+// e.g. "2 large onions" × 2 → "4 large onions"
+function scaleIngredient(ing,mult){
+  if(mult===1||!mult)return ing;
+  // Match leading number (int or decimal or fraction)
+  const m=ing.match(/^([\d]+(?:[\.,][\d]+)?(?:\/[\d]+)?)\s*(g|kg|ml|l|ltr|tsp|tbsp|cup|cups|x\s*\d+)?\s*(.*)/i);
+  if(!m)return ing+` (×${mult})`;
+  let num=parseFloat(m[1].replace(',','.'));
+  const unit=(m[2]||'').trim();
+  const rest=(m[3]||'').trim();
+  let scaled=num*mult;
+  // Convert g → kg if over 1000
+  if(unit.toLowerCase()==='g'&&scaled>=1000){
+    const kg=scaled/1000;
+    const kgStr=Number.isInteger(kg)?`${kg}kg`:`${parseFloat(kg.toFixed(2))}kg`;
+    return`${kgStr} ${rest}`.trim();
+  }
+  // Convert ml → l if over 1000
+  if(unit.toLowerCase()==='ml'&&scaled>=1000){
+    const l=scaled/1000;
+    const lStr=Number.isInteger(l)?`${l}l`:`${parseFloat(l.toFixed(2))}l`;
+    return`${lStr} ${rest}`.trim();
+  }
+  // Format number nicely
+  const scaledStr=Number.isInteger(scaled)?`${scaled}`:`${parseFloat(scaled.toFixed(2))}`;
+  return`${scaledStr}${unit?' '+unit:''} ${rest}`.trim();
+}
+
+/* ── SHOPPING ────────────────────────────────────────────── */
+// Split ingredient string into { qty, name } for separate editing
+// e.g. "500g beef mince" → {qty:"500g", name:"beef mince"}
+// e.g. "2 large onions"  → {qty:"2",    name:"large onions"}
+// e.g. "Fresh ginger"    → {qty:"",     name:"Fresh ginger"}
+function splitIngredient(text){
+  // Units must be followed by a space or end of string — prevents "g" eating "garlic", "l" eating "lime" etc.
+  const m=text.match(/^([\d\/\.\-]+\s*(?:kg|g|ml|l|ltr|oz|lb|tsp|tbsp|cups?)(?=\s|$)(?:\s+(?:large|medium|small|heaped|level))?)\s+(.+)/i);
+  if(m)return{qty:m[1].trim(),name:m[2].trim()};
+  // Plain number (e.g. "2 large onions", "4 garlic cloves")
+  const m2=text.match(/^(\d+(?:\.\d+)?)\s+((?:large|medium|small)\s+)?(.+)/i);
+  if(m2&&!m2[3].match(/^(?:kg|g|ml|l|ltr|oz|lb|tsp|tbsp|cups?)\b/i))
+    return{qty:(m2[1]+(m2[2]?` ${m2[2].trim()}`:'')).trim(),name:m2[3].trim()};
+  // Count units (e.g. "2 cans", "1 bunch")
+  const m3=text.match(/^(x\s*\d+|\d+\s+(?:can|tin|jar|bag|pack|bunch|clove|sprig|slice|rasher)s?)\s+(.+)/i);
+  if(m3)return{qty:m3[1].trim(),name:m3[2].trim()};
+  return{qty:'',name:text};
+}
+
+// Parse an ingredient string into { amount (number), unit (string), baseName (string) }
+function parseIngredient(text){
+  if(!text)return{amount:0,unit:'',baseName:''};
+  const t=text.trim();
+  // Match leading number + optional unit
+  const m=t.match(/^([\d]+(?:[.,][\d]+)?(?:\/[\d]+)?)\s*(g|kg|ml|l|ltr|tsp|tbsp|cups?|oz|lb|x\d+)?\s*(.*)/i);
+  if(m){
+    let amount=parseFloat(m[1].replace(',','.'));
+    let unit=(m[2]||'').toLowerCase().replace(/s$/,''); // normalise plural
+    if(unit==='ltr')unit='l';
+    if(unit==='cup')unit='cup';
+    const baseName=m[3].trim().toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+    return{amount,unit,baseName};
+  }
+  // No number found
+  const baseName=t.toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+  return{amount:1,unit:'',baseName};
+}
+
+// Convert amount to a common base for comparison (everything to g/ml where possible)
+function toBase(amount,unit){
+  if(unit==='kg')return{amount:amount*1000,unit:'g'};
+  if(unit==='l')return{amount:amount*1000,unit:'ml'};
+  return{amount,unit};
+}
+
+// Normalise ingredient name for pantry key matching
+function pantryKey(text){
+  return text.toLowerCase()
+    .replace(/[^a-z0-9 ]/g,'')
+    .replace(/\b(large|medium|small|fresh|dried|frozen|ground|chopped|diced|sliced|tinned|canned|heaped|level|rinsed|drained)\b/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+// Given a recipe ingredient string + batches, return how much pantry covers
+// Returns { covered: bool, shortfall: string (ingredient with reduced qty) }
+function checkPantry(ing,batches,pantry){
+  const needed=parseIngredient(ing);
+  const neededAmount=needed.amount*(batches||1);
+  const neededBase=toBase(neededAmount,needed.unit);
+  const key=pantryKey(needed.baseName||ing);
+  const item=pantry[key];
+  if(!item||!item.amount)return{covered:false,shortfall:null};
+  const haveBase=toBase(item.amount,item.unit||'');
+  // Units must be compatible (same unit family)
+  const compatible=neededBase.unit===haveBase.unit||(neededBase.unit===''&&haveBase.unit==='');
+  if(!compatible)return{covered:false,shortfall:null};
+  if(haveBase.amount>=neededBase.amount)return{covered:true,shortfall:null};
+  // Partial — calculate how much still needed
+  const stillNeeded=neededBase.amount-haveBase.amount;
+  const shortfall=scaleIngredient(ing,stillNeeded/neededAmount);
+  return{covered:false,shortfall};
+}
+
+function Shopping({plan,allRecipes,viewKey,shopChecked,onToggleShop,shopEdits,onShopEdit,shopRemoved,onShopRemove,onShopRestore,shopExtras,setShopExtras,essentials,setEssentials,essChecked,onToggleEss,adhoc,setAdhoc,adhocChecked,onToggleAdhoc,catOverrides,onCatOverride,pantry}){
+  const[activeTab,setActiveTab]=useState('master');
+  const[coll,setColl]=useState({});
+  const[newEss,setNewEss]=useState('');
+  const[newEssCat,setNewEssCat]=useState('');
+  const[newAdhoc,setNewAdhoc]=useState('');
+  const[newAdhocCat,setNewAdhocCat]=useState('');
+  const[newExtra,setNewExtra]=useState('');
+  const[newExtraCat,setNewExtraCat]=useState('');
+  const[newMaster,setNewMaster]=useState('');
+  const[newMasterCat,setNewMasterCat]=useState('');
+  const[newMasterType,setNewMasterType]=useState('adhoc'); // 'adhoc' | 'ess'
+  const[editingKey,setEditingKey]=useState(null);
+  const[editQty,setEditQty]=useState('');
+  const[editName,setEditName]=useState('');
+  const[editCat,setEditCat]=useState('');
+  const[editingQtyKey,setEditingQtyKey]=useState(null);
+  const[qtyVal,setQtyVal]=useState('');
+  const[changingCatKey,setChangingCatKey]=useState(null); // item key whose category is being changed
+  const weekShop=shopChecked[viewKey]||{};
+  const weekEdits=shopEdits[viewKey]||{};
+  const weekRemoved=shopRemoved[viewKey]||{};
+  const weekExtras=shopExtras[viewKey]||[];
+  const weekAdhoc=Array.isArray(adhoc)?[]:(adhoc[viewKey]||[]); // week-scoped extra items
+
+  const{plannedMeals,grouped,recipeBatches}=useMemo(()=>{
+    const bulkCookList=plan.bulkCook||[];
+    const addToListSlots=plan.addToList||[];
+    const servingsNeeded={};
+    Object.entries(plan).forEach(([day,dayPlan])=>{
+      if(day==='bulkCook'||day==='addToList'||!dayPlan||typeof dayPlan!=='object')return;
+      const add=(name,slot,count)=>{
+        if(!name||SKIP_RECIPE.includes(name)||bulkCookList.includes(name))return;
+        // Only include if explicitly opted in via "Add to list"
+        if(!addToListSlots.includes(`${day}_${slot}`))return;
+        servingsNeeded[name]=(servingsNeeded[name]||0)+count;
+      };
+      add(dayPlan.dinner,'dinner',2);
+      add(dayPlan.alex,'alex',1);
+      add(dayPlan.sam,'sam',1);
+    });
+    const allMealNames=new Set();
+    Object.entries(plan).forEach(([day,dayPlan])=>{
+      if(day==='bulkCook'||day==='addToList'||!dayPlan||typeof dayPlan!=='object')return;
+      [dayPlan.dinner,dayPlan.alex,dayPlan.sam].forEach(m=>{
+        if(m&&!SKIP_RECIPE.includes(m)&&allRecipes.find(r=>r.name===m))allMealNames.add(m);
+      });
+    });
+    const batches={};
+    Object.entries(servingsNeeded).forEach(([name,needed])=>{
+      const rec=allRecipes.find(r=>r.name===name);
+      if(!rec)return;
+      batches[name]=Math.max(1,Math.ceil(needed/(rec.serves||1)));
+    });
+    bulkCookList.forEach(name=>{if(allMealNames.has(name))batches[name]=1;});
+    const map={};
+    [...allMealNames].forEach(name=>{
+      const rec=allRecipes.find(r=>r.name===name);
+      if(!rec||!batches[name])return;
+      const b=batches[name];
+      const isBulk=bulkCookList.includes(name);
+      rec.ingredients?.forEach(ing=>{
+        const k=ing.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+        // Check pantry
+        const {covered,shortfall}=checkPantry(ing,b,pantry||{});
+        if(covered)return; // pantry has enough — skip
+        const displayIng=shortfall||ing; // reduced qty if partial
+        const scaled=b>1&&!shortfall?scaleIngredient(displayIng,b):displayIng;
+        if(!map[k])map[k]={item:scaled,rawItem:ing,recipes:[name],section:cat(ing,catOverrides),batches:b,bulk:isBulk,fromPantry:!!shortfall};
+        else if(!map[k].recipes.includes(name))map[k].recipes.push(name);
+      });
+    });
+    const grps={};
+    Object.values(map).forEach(e=>{if(!grps[e.section])grps[e.section]=[];grps[e.section].push(e);});
+    return{
+      plannedMeals:[...allMealNames],
+      grouped:SECTIONS.map(s=>({...s,items:grps[s.id]||[]})).filter(s=>s.items.length>0),
+      recipeBatches:batches,
+    };
+  },[plan,allRecipes,catOverrides,pantry]);
+
+  // Get the display text + qty+name split for an item key
+  const getDisplay=(k,defaultText)=>{
+    const e=weekEdits[k];
+    if(e&&typeof e==='object')return{qty:e.qty??'',name:e.name??defaultText};
+    if(typeof e==='string'){const s=splitIngredient(e);return s;} // legacy string edits
+    return splitIngredient(defaultText);
+  };
+
+  const startEdit=(k,defaultText,rawText)=>{
+    const{qty,name}=getDisplay(k,defaultText);
+    const currentCat=catOverrides[(rawText||defaultText).toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]||'';
+    setEditQty(qty);setEditName(name);setEditCat(currentCat);setEditingKey(k);
+  };
+  const saveEdit=(k,rawText)=>{
+    const qty=editQty.trim();const name=editName.trim();
+    if(!name)return;
+    onShopEdit(k,{qty,name});
+    if(editCat){
+      const rk=(rawText||name).toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+      if(rk)onCatOverride({...catOverrides,[rk]:editCat});
+    }
+    setEditingKey(null);
+  };
+  const cancelEdit=()=>setEditingKey(null);
+
+  const startQtyEdit=(k,currentQty)=>{setEditingQtyKey(k);setQtyVal(currentQty);};
+  const saveQtyEdit=(k,defaultText)=>{
+    const{name}=getDisplay(k,defaultText);
+    onShopEdit(k,{qty:qtyVal.trim(),name});
+    setEditingQtyKey(null);
+  };
+
+  const saveCat=(itemKey,rawText,sectionId)=>{
+    const k=rawText.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    const updated={...catOverrides,[k]:sectionId};
+    onCatOverride(updated);
+    setChangingCatKey(null);
+  };
+
+  const resetItem=(k)=>onShopEdit(k,null);
+
+  const saveWithCat=(text,catChoice)=>{
+    if(!catChoice)return;
+    const k=text.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    if(k)onCatOverride({...catOverrides,[k]:catChoice});
+  };
+
+  const addExtra=()=>{
+    const t=newExtra.trim();if(!t)return;
+    saveWithCat(t,newExtraCat);
+    const updated={...shopExtras,[viewKey]:[...weekExtras,{id:Date.now(),text:t}]};
+    setShopExtras(updated);setNewExtra('');setNewExtraCat('');
+  };
+  const removeExtra=(id)=>{
+    const updated={...shopExtras,[viewKey]:weekExtras.filter(e=>e.id!==id)};
+    setShopExtras(updated);
+  };
+
+  const addEss=()=>{
+    const t=newEss.trim();if(!t)return;
+    saveWithCat(t,newEssCat);
+    setEssentials([...essentials,t]);setNewEss('');setNewEssCat('');
+  };
+  const addMasterItem=()=>{
+    const t=newMaster.trim();if(!t)return;
+    saveWithCat(t,newMasterCat);
+    if(newMasterType==='ess'){
+      setEssentials([...essentials,t]);
+    } else {
+      const next={...adhoc,[viewKey]:[...weekAdhoc,{text:t,id:Date.now()}]};
+      setAdhoc(next);
+    }
+    setNewMaster('');setNewMasterCat('');
+  };
+  const addAdhoc=()=>{
+    const t=newAdhoc.trim();if(!t)return;
+    saveWithCat(t,newAdhocCat);
+    const next={...adhoc,[viewKey]:[...weekAdhoc,{text:t,id:Date.now()}]};
+    setAdhoc(next);setNewAdhoc('');setNewAdhocCat('');
+  };
+  const masterDelete=(item)=>{
+    if(item.src==='ess'){
+      // Hide from this week's master/shopping only — does NOT remove from essentials list
+      // Use a week-scoped removal key so it reappears next week
+      const weekKey='week_ess_'+viewKey+'_'+item.key;
+      onShopRemove(weekKey);
+    } else if(item.src==='adhoc'){
+      const id=item.key.replace('adhoc_','');
+      const next={...adhoc,[viewKey]:weekAdhoc.filter(i=>String(i.id)!==id)};
+      setAdhoc(next);
+    } else {
+      onShopRemove(item.key);
+    }
+  };
+
+  const adhocDoneCount=weekAdhoc.filter(item=>adhocChecked['adhoc_'+item.id]).length;
+  const clearDoneAdhoc=()=>setAdhoc({...adhoc,[viewKey]:weekAdhoc.filter(item=>!adhocChecked['adhoc_'+item.id])});
+
+  const removedCount=Object.keys(weekRemoved).filter(k=>weekRemoved[k]).length;
+  const visibleCount=grouped.reduce((a,g)=>a+g.items.filter(e=>{const k=e.item.toLowerCase().replace(/[^a-z0-9]/g,'_');return!weekRemoved[k];}).length,0)+weekExtras.length;
+
+  // Shared category selector for add rows
+  function CatSelect({value,onChange}){
+    return(
+      <select className='hl-catsel' value={value} onChange={e=>onChange(e.target.value)}>
+        <option value=''>🗂 Aisle (auto)</option>
+        {SECTIONS.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
+      </select>
+    );
+  }
+
+  const tabs=[
+    {id:'master',label:'Master List',count:null},
+    {id:'meals',label:'From Your Meals',count:visibleCount||null},
+    {id:'adhoc',label:'Extra Items',count:weekAdhoc.length||null},
+    {id:'ess',label:'Essentials',count:null},
+  ];
+
+  // Renders one item row for the meals list (auto-gen or manual extra)
+  function CatPicker({itemKey,rawText,currentCat,onClose}){
+    return(
+      <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.4)',zIndex:9999,display:'flex',alignItems:'flex-end',justifyContent:'center'}}
+        onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+        <div style={{background:'white',borderRadius:'20px 20px 0 0',width:'100%',maxWidth:540,maxHeight:'75vh',overflowY:'auto',boxShadow:'0 -8px 32px rgba(0,0,0,.18)'}}>
+          <div style={{background:'#2A4A1E',padding:'14px 18px',borderRadius:'20px 20px 0 0',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:16,color:'#F0E6CA'}}>Change Aisle</div>
+              <div style={{fontFamily:"'Lora',serif",fontStyle:'italic',fontSize:11,color:'#8CAD78',marginTop:2}}>"{rawText}"</div>
+            </div>
+            <button className='hl-close' onClick={onClose}>✕</button>
+          </div>
+          <div style={{padding:'8px 0'}}>
+            {SECTIONS.map(s=>(
+              <div key={s.id} onClick={()=>saveCat(itemKey,rawText,s.id)}
+                style={{padding:'13px 18px',cursor:'pointer',fontSize:14,fontFamily:"'DM Sans',sans-serif",
+                  display:'flex',alignItems:'center',gap:10,borderBottom:'1px solid #F5F0E8',
+                  background:s.id===currentCat?'#EAF2E5':'white',
+                  color:s.id===currentCat?'#2A4A1E':'#2C2416',
+                  fontWeight:s.id===currentCat?600:400}}>
+                {s.label}
+                {s.id===currentCat&&<span style={{marginLeft:'auto',fontSize:12,color:'#8CAD78'}}>✓ current</span>}
+              </div>
+            ))}
+            {catOverrides[rawText.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]&&(
+              <div onClick={()=>{const k=rawText.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();const u={...catOverrides};delete u[k];onCatOverride(u);setChangingCatKey(null);}}
+                style={{padding:'13px 18px',cursor:'pointer',fontSize:13,fontFamily:"'DM Sans',sans-serif",color:'#C4784A',background:'#FEF9F4',borderTop:'2px dashed #E8D8C8'}}>
+                ↺ Reset to default category
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function ItemRow({itemKey,defaultText,rawText,forRecipes,isManual,onDelete,batchCount,label,fromPantry}){
+    const{qty,name}=getDisplay(itemKey,defaultText);
+    const done=weekShop[itemKey];
+    const isEditing=editingKey===itemKey;
+    const isEditingQty=editingQtyKey===itemKey;
+    const isEdited=!!weekEdits[itemKey];
+
+    if(isEditing) return(
+      <div className='hl-si' style={{flexDirection:'column',alignItems:'stretch',gap:6,padding:'10px 18px'}}>
+        <div className='hl-edit-row'>
+          <input className='hl-qty-input' placeholder='qty' value={editQty} onChange={e=>setEditQty(e.target.value)} style={{width:70}}/>
+          <input className='hl-inline-input' placeholder='item name' value={editName} onChange={e=>setEditName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')saveEdit(itemKey,rawText||defaultText);if(e.key==='Escape')cancelEdit();}} autoFocus/>
+          <button className='hl-inline-save' onClick={()=>saveEdit(itemKey,rawText||defaultText)}>✓</button>
+          {isEdited&&<button className='hl-restore-btn' onClick={()=>resetItem(itemKey)} title='Reset'>↺</button>}
+          <button className='hl-editbtn' onClick={cancelEdit}>✕</button>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <span style={{fontSize:10,color:'#9A8E7A',fontFamily:"'DM Sans',sans-serif",flexShrink:0}}>Aisle:</span>
+          <CatSelect value={editCat} onChange={setEditCat}/>
+        </div>
+      </div>
+    );
+
+    return(
+      <>
+        <div className={'hl-si'+(done?' done':'')+(isManual?' hl-manual-item':'')}>
+          <div className='hl-cb' onClick={()=>onToggleShop(itemKey)}>{done?'✓':''}</div>
+          {isEditingQty
+            ?<input className='hl-qty-input' value={qtyVal} autoFocus onChange={e=>setQtyVal(e.target.value)} onBlur={()=>saveQtyEdit(itemKey,defaultText)} onKeyDown={e=>{if(e.key==='Enter')saveQtyEdit(itemKey,defaultText);if(e.key==='Escape')setEditingQtyKey(null);}}/>
+            :<span className='hl-qty' onClick={()=>!done&&startQtyEdit(itemKey,qty)} title='Edit quantity'>{qty||'+'}</span>
+          }
+          <div style={{flex:1,cursor:'pointer'}} onClick={()=>onToggleShop(itemKey)}>
+            <div className='hl-in'>{name}{isEdited&&<span style={{fontSize:9,color:'#C4784A',marginLeft:5}}>edited</span>}{label&&<span style={{fontSize:9,background:'#EAF2E5',color:'#3A6B2A',borderRadius:4,padding:'0 5px',marginLeft:5,fontWeight:600}}>{label}</span>}</div>
+            {forRecipes&&<div className='hl-src'>
+              For: {forRecipes.join(', ')}
+              {batchCount>1&&<span style={{marginLeft:5,background:'#FEF0E8',color:'#C4784A',borderRadius:4,padding:'0 5px',fontSize:9,fontWeight:700,fontStyle:'normal'}}>×{batchCount} batch</span>}
+              {fromPantry&&<span style={{marginLeft:5,background:'#EAF2E5',color:'#2A4A1E',borderRadius:4,padding:'0 5px',fontSize:9,fontWeight:700}}>🧊 reduced from pantry</span>}
+            </div>}
+          </div>
+          <button className='hl-editbtn' onClick={()=>startEdit(itemKey,defaultText,rawText||defaultText)} title='Edit'>✏️</button>
+          <button className='hl-delbtn' onClick={onDelete} title='Remove'>✕</button>
+        </div>
+        {changingCatKey===itemKey&&ReactDOM.createPortal(
+          <CatPicker itemKey={itemKey} rawText={rawText||defaultText} currentCat={cat(rawText||defaultText,catOverrides)} onClose={()=>setChangingCatKey(null)}/>,
+          document.body
+        )}
+      </>
+    );
+  }
+
+  return <div>
+    <h1 className='hl-h1'>Shopping Lists</h1>
+    <p className='hl-sub'>Tap qty pill to change amount · ✏️ to edit name · ✕ to remove</p>
+    <div className='hl-stabs'>
+      {tabs.map(t=>(
+        <button key={t.id} className={'hl-st'+(activeTab===t.id?' on':'')} onClick={()=>setActiveTab(t.id)}>
+          {t.label}{t.count>0&&<span className='hl-bdg'>{t.count}</span>}
+        </button>
+      ))}
+    </div>
+
+    {activeTab==='master'&&(()=>{
+      // Build one flat item pool from ALL sources, then group by aisle
+      const allItems=[];
+
+      // 1. Meal ingredients (not removed)
+      grouped.forEach(sec=>{
+        sec.items.forEach(e=>{
+          const k=e.item.toLowerCase().replace(/[^a-z0-9]/g,'_');
+          if(weekRemoved[k])return;
+          allItems.push({
+            key:k,
+            text:e.item,
+            src:'meals',
+            section:e.section||sec.id,
+            batches:e.batches||1,
+            recipes:e.recipes,
+          });
+        });
+      });
+
+      // 2. Manually added this week
+      weekExtras.forEach(item=>{
+        const k='extra_'+item.id;
+        const display=weekEdits[k]?.name||item.text;
+        allItems.push({key:k,text:display,src:'meals',section:cat(display,catOverrides)});
+      });
+
+      // 3. Essentials (skip any hidden this week)
+      essentials.forEach(item=>{
+        const k='ess_'+item.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const weekRemovedKey='week_ess_'+viewKey+'_'+k;
+        if(weekRemoved[weekRemovedKey])return;
+        allItems.push({key:k,text:item,src:'ess',section:cat(item,catOverrides)});
+      });
+
+      // 4. Extra Items (adhoc)
+      weekAdhoc.forEach(item=>{
+        const k='adhoc_'+item.id;
+        allItems.push({key:k,text:item.text,src:'adhoc',section:cat(item.text,catOverrides)});
+      });
+
+      // Group by aisle in SECTIONS order
+      const aisleMap={};
+      allItems.forEach(item=>{
+        const sid=item.section||'other';
+        if(!aisleMap[sid])aisleMap[sid]=[];
+        aisleMap[sid].push(item);
+      });
+      const sections=SECTIONS
+        .map(s=>({...s,items:aisleMap[s.id]||[]}))
+        .filter(s=>s.items.length>0);
+
+      const totalItems=allItems.length;
+      const doneCount=allItems.filter(i=>{
+        if(i.src==='ess') return essChecked[i.key];
+        if(i.src==='adhoc') return adhocChecked[i.key];
+        return weekShop[i.key];
+      }).length;
+
+      const toggleMaster=(item)=>{
+        if(item.src==='ess') onToggleEss(item.key);
+        else if(item.src==='adhoc') onToggleAdhoc(item.key);
+        else onToggleShop(item.key);
+      };
+      const isDone=(item)=>{
+        if(item.src==='ess') return essChecked[item.key];
+        if(item.src==='adhoc') return adhocChecked[item.key];
+        return weekShop[item.key];
+      };
+
+      // Small source badge so you can see where each item comes from
+      const SrcBadge=({src})=>{
+        if(src==='ess') return <span style={{fontSize:9,background:'#EAF5EE',color:'#4A8A5A',borderRadius:4,padding:'0 5px',fontWeight:700,marginLeft:5,flexShrink:0}}>ESS</span>;
+        if(src==='adhoc') return <span style={{fontSize:9,background:'#F0EEF8',color:'#6A5A8A',borderRadius:4,padding:'0 5px',fontWeight:700,marginLeft:5,flexShrink:0}}>EXTRA</span>;
+        return null;
+      };
+
+      return <div className='hl-scard'>
+        <div className='hl-shead bg-master' style={{justifyContent:'space-between'}}>
+          <span>📋 Master Shopping List</span>
+          <span style={{fontSize:11,opacity:.8}}>{doneCount}/{totalItems} done</span>
+        </div>
+        {totalItems===0
+          ?<div className='hl-empty'>Add meals to your plan and items to your lists<br/>and they'll all appear here ✨</div>
+          :sections.map(sec=>{
+            const secOpen=!coll['master_'+sec.id];
+            const secDone=sec.items.filter(i=>isDone(i)).length;
+            return <div className='hl-grp' key={sec.id}>
+              <div className='hl-grph' onClick={()=>setColl(c=>({...c,['master_'+sec.id]:!c['master_'+sec.id]}))}>
+                <span className='hl-grpl'>{sec.label}</span>
+                <span className='hl-grpc'>{secDone}/{sec.items.length}</span>
+                <span className={'hl-chev'+(secOpen?' open':'')}>▲</span>
+              </div>
+              {secOpen&&sec.items.map(item=>{
+                const done=isDone(item);
+                const isEditing=editingKey==='master_'+item.key;
+                const{qty,name}=getDisplay(item.key,item.text);
+                const isEditingQty=editingQtyKey==='master_'+item.key;
+                const rawForCat=item.text;
+                return <div key={item.key} className={'hl-si'+(done?' done':'')} style={isEditing?{flexDirection:'column',alignItems:'stretch',gap:6,padding:'10px 18px'}:{}}>
+                  <div className='hl-cb' onClick={()=>!isEditing&&toggleMaster(item)}>{done?'✓':''}</div>
+                  {isEditing
+                    ?<>
+                        <div className='hl-edit-row'>
+                          <input className='hl-qty-input' placeholder='qty' value={editQty} onChange={e=>setEditQty(e.target.value)} style={{width:70}}/>
+                          <input className='hl-inline-input' placeholder='item name' value={editName} onChange={e=>setEditName(e.target.value)}
+                            onKeyDown={e=>{
+                              if(e.key==='Enter'){
+                                onShopEdit(item.key,{qty:editQty.trim(),name:editName.trim()});
+                                if(editCat){const rk=editName.trim().toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(rk)onCatOverride({...catOverrides,[rk]:editCat});}
+                                setEditingKey(null);
+                              }
+                              if(e.key==='Escape')setEditingKey(null);
+                            }} autoFocus/>
+                          <button className='hl-inline-save' onClick={()=>{
+                            onShopEdit(item.key,{qty:editQty.trim(),name:editName.trim()});
+                            if(editCat){
+                              // Use same key format as cat() function
+                              const rk=editName.trim().toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+                              if(rk)onCatOverride({...catOverrides,[rk]:editCat});
+                            }
+                            setEditingKey(null);
+                          }}>✓</button>
+                          <button className='hl-editbtn' onClick={()=>setEditingKey(null)}>✕</button>
+                        </div>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontSize:10,color:'#9A8E7A',flexShrink:0}}>Aisle:</span>
+                          <CatSelect value={editCat} onChange={setEditCat}/>
+                        </div>
+                      </>
+                    :<>
+                        {isEditingQty
+                          ?<input className='hl-qty-input' value={qtyVal} autoFocus onChange={e=>setQtyVal(e.target.value)}
+                              onBlur={()=>{onShopEdit(item.key,{qty:qtyVal.trim(),name});setEditingQtyKey(null);}}
+                              onKeyDown={e=>{if(e.key==='Enter'){onShopEdit(item.key,{qty:qtyVal.trim(),name});setEditingQtyKey(null);}if(e.key==='Escape')setEditingQtyKey(null);}}/>
+                          :<span className='hl-qty' onClick={()=>!done&&(setEditingQtyKey('master_'+item.key),setQtyVal(qty))}>{qty||'+'}</span>
+                        }
+                        <div style={{flex:1,cursor:'pointer'}} onClick={()=>toggleMaster(item)}>
+                          <div className='hl-in' style={{display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
+                            {name}<SrcBadge src={item.src}/>
+                            {item.batches>1&&<span style={{fontSize:9,background:'#FEF0E8',color:'#C4784A',borderRadius:4,padding:'0 5px',fontWeight:700}}>×{item.batches}</span>}
+                          </div>
+                          {item.recipes&&<div className='hl-src'>For: {item.recipes.join(', ')}</div>}
+                        </div>
+                        <button className='hl-editbtn' onClick={()=>{
+                          const{qty:q,name:n}=getDisplay(item.key,item.text);
+                          const curCat=catOverrides[rawForCat.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]||'';
+                          setEditQty(q);setEditName(n);setEditCat(curCat);setEditingKey('master_'+item.key);
+                        }}>✏️</button>
+                        <button className='hl-delbtn' title='Remove' onClick={(e)=>{e.stopPropagation();masterDelete(item);}}>✕</button>
+                      </>
+                  }
+                </div>;
+              })}
+            </div>;
+          })
+        }
+      <div className='hl-master-addrow'>
+        <input className='hl-shop-addinput' type='text' placeholder='Add an item…' value={newMaster} onChange={e=>setNewMaster(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addMasterItem()}/>
+        <CatSelect value={newMasterCat} onChange={setNewMasterCat}/>
+        <select className='hl-master-type' value={newMasterType} onChange={e=>setNewMasterType(e.target.value)}>
+          <option value='adhoc'>Extra Item</option>
+          <option value='ess'>Essential</option>
+        </select>
+        <button className='hl-shop-addbtn' onClick={addMasterItem}>+ Add</button>
+      </div>
+    </div>;
+    })()}
+
+    {activeTab==='meals'&&<div className='hl-scard'>
+      <div className='hl-shead bg-gen'>🧾 Auto-generated from your meal plan</div>
+      {plannedMeals.length>0&&<div className='hl-mchips'>{plannedMeals.map(m=><span key={m} className='hl-chip'>{m}</span>)}</div>}
+      {grouped.length===0&&weekExtras.length===0
+        ?<div className='hl-empty'>Select meals in the Meal Plan tab<br/>and ingredients appear here ✨</div>
+        :<>
+          {grouped.map(sec=>{
+            const visibleItems=sec.items.filter(e=>{const k=e.item.toLowerCase().replace(/[^a-z0-9]/g,'_');return!weekRemoved[k];});
+            const open=!coll[sec.id];
+            return <div className='hl-grp' key={sec.id}>
+              <div className='hl-grph' onClick={()=>setColl(c=>({...c,[sec.id]:!c[sec.id]}))}>
+                <span className='hl-grpl'>{sec.label}</span>
+                <span className='hl-grpc'>{visibleItems.length} item{visibleItems.length!==1?'s':''}</span>
+                <span className={'hl-chev'+(open?' open':'')}>▲</span>
+              </div>
+              {open&&visibleItems.map(e=>{
+                const k=e.item.toLowerCase().replace(/[^a-z0-9]/g,'_');
+                const b=e.batches||1;
+                return <ItemRow key={e.rawItem||e.item} itemKey={k} defaultText={e.item} rawText={e.rawItem||e.item} forRecipes={e.recipes} isManual={false} onDelete={()=>onShopRemove(k)} batchCount={b} fromPantry={e.fromPantry}/>;
+              })}
+            </div>;
+          })}
+          {weekExtras.length>0&&<div className='hl-grp'>
+            <div className='hl-grph' onClick={()=>setColl(c=>({...c,'_extras':!c['_extras']}))}>
+              <span className='hl-grpl'>🛒 Manually Added</span>
+              <span className='hl-grpc'>{weekExtras.length} item{weekExtras.length!==1?'s':''}</span>
+              <span className={'hl-chev'+(!coll['_extras']?' open':'')}>▲</span>
+            </div>
+            {!coll['_extras']&&weekExtras.map(item=>{
+              const k='extra_'+item.id;
+              return <ItemRow key={item.id} itemKey={k} defaultText={item.text} rawText={item.text} forRecipes={null} isManual={true} onDelete={()=>removeExtra(item.id)} label={item.carriedOver?'↩ carried over':null}/>;
+            })}
+          </div>}
+          {removedCount>0&&<div className='hl-removed-bar'>
+            <span>{removedCount} item{removedCount!==1?'s':''} hidden</span>
+            <button className='hl-restore-btn' onClick={onShopRestore}>Restore all</button>
+          </div>}
+        </>
+      }
+      <div className='hl-shop-addrow'>
+        <input className='hl-shop-addinput' type='text' placeholder='Add an item manually…' value={newExtra} onChange={e=>setNewExtra(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addExtra()}/>
+        <CatSelect value={newExtraCat} onChange={setNewExtraCat}/>
+        <button className='hl-shop-addbtn' onClick={addExtra}>+ Add</button>
+      </div>
+    </div>}
+
+    {activeTab==='adhoc'&&<div className='hl-scard'>
+      <div className='hl-shead bg-adhoc' style={{justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+        <span>🛍️ Extra Items</span>
+        {adhocDoneCount>0&&<button onClick={clearDoneAdhoc} style={{background:'rgba(255,255,255,.2)',border:'none',color:'white',borderRadius:6,padding:'3px 10px',fontSize:11,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",whiteSpace:'nowrap'}}>Remove ticked ({adhocDoneCount})</button>}
+      </div>
+      {weekAdhoc.length===0&&<div className='hl-empty'>One-off items not in your regular lists.<br/>Add below, tick off as you go, then remove when done.</div>}
+      <div>
+        {weekAdhoc.map(item=>{
+          const k='adhoc_'+item.id;
+          const done=adhocChecked[k];
+          const isEditingThis=editingKey===k;
+          return <div key={item.id} className={'hl-si'+(done?' done':'')+(isEditingThis?' ':'')} style={isEditingThis?{flexDirection:'column',alignItems:'stretch',gap:6,padding:'10px 18px'}:{}}>
+            {isEditingThis
+              ?<>
+                  <div className='hl-edit-row'>
+                    <input className='hl-inline-input' placeholder='item name' value={editName} onChange={e=>setEditName(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter'){onCatOverride&&editCat&&onCatOverride({...catOverrides,[editName.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]:editCat});setAdhoc({...adhoc,[viewKey]:weekAdhoc.map(i=>i.id===item.id?{...i,text:editName.trim()||i.text}:i)});setEditingKey(null);}if(e.key==='Escape')cancelEdit();}} autoFocus/>
+                    <button className='hl-inline-save' onClick={()=>{if(editCat){const rk=editName.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(rk)onCatOverride({...catOverrides,[rk]:editCat});}setAdhoc({...adhoc,[viewKey]:weekAdhoc.map(i=>i.id===item.id?{...i,text:editName.trim()||i.text}:i)});setEditingKey(null);}}>✓</button>
+                    <button className='hl-editbtn' onClick={cancelEdit}>✕</button>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:10,color:'#9A8E7A',flexShrink:0}}>Aisle:</span>
+                    <CatSelect value={editCat} onChange={setEditCat}/>
+                  </div>
+                </>
+              :<>
+                  <div className='hl-cb' onClick={()=>onToggleAdhoc(k)}>{done?'✓':''}</div>
+                  <div className='hl-in' onClick={()=>onToggleAdhoc(k)} style={{flex:1}}>{item.text}</div>
+                  <button className='hl-editbtn' onClick={()=>{const curCat=catOverrides[item.text.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]||'';setEditName(item.text);setEditCat(curCat);setEditingKey(k);}} title='Edit'>✏️</button>
+                  <button className='hl-delbtn' onClick={()=>setAdhoc({...adhoc,[viewKey]:weekAdhoc.filter(i=>i.id!==item.id)})}>✕</button>
+                </>
+            }
+          </div>;
+        })}
+      </div>
+      <div className='hl-addrow'>
+        <input className='hl-addinput' type='text' placeholder='e.g. Birthday candles, new sponge…' value={newAdhoc} onChange={e=>setNewAdhoc(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addAdhoc()}/>
+        <CatSelect value={newAdhocCat} onChange={setNewAdhocCat}/>
+        <button className='hl-addbtn' style={{background:'#6A5A8A'}} onClick={addAdhoc}>+ Add</button>
+      </div>
+    </div>}
+
+    {activeTab==='ess'&&<div className='hl-scard'>
+      <div className='hl-shead bg-ess'>🔄 Repeat Essentials</div>
+      <div>{essentials.map((item,i)=>{
+        const k='ess_'+item.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const done=essChecked[k];
+        const isEditingThis=editingKey==='ess_'+i;
+        return <div key={i} className={'hl-si'+(done?' done':'')} style={isEditingThis?{flexDirection:'column',alignItems:'stretch',gap:6,padding:'10px 18px'}:{}}>
+          {isEditingThis
+            ?<>
+                <div className='hl-edit-row'>
+                  <input className='hl-inline-input' placeholder='item name' value={editName} autoFocus
+                    onChange={e=>setEditName(e.target.value)}
+                    onKeyDown={e=>{
+                      if(e.key==='Enter'){const t=editName.trim()||item;if(editCat){const rk=t.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(rk)onCatOverride({...catOverrides,[rk]:editCat});}setEssentials(essentials.map((x,j)=>j===i?t:x));setEditingKey(null);}
+                      if(e.key==='Escape')cancelEdit();
+                    }}/>
+                  <button className='hl-inline-save' onClick={()=>{
+                    const t=editName.trim()||item;
+                    if(editCat){const rk=t.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();if(rk)onCatOverride({...catOverrides,[rk]:editCat});}
+                    setEssentials(essentials.map((x,j)=>j===i?t:x));setEditingKey(null);
+                  }}>✓</button>
+                  <button className='hl-editbtn' onClick={cancelEdit}>✕</button>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontSize:10,color:'#9A8E7A',flexShrink:0}}>Aisle:</span>
+                  <CatSelect value={editCat} onChange={setEditCat}/>
+                </div>
+              </>
+            :<>
+                <div className='hl-cb' onClick={()=>onToggleEss(k)}>{done?'✓':''}</div>
+                <div className='hl-in' onClick={()=>onToggleEss(k)} style={{flex:1}}>{item}</div>
+                <button className='hl-editbtn' onClick={()=>{const curCat=catOverrides[item.toLowerCase().replace(/[^a-z0-9 ]/g,'').trim()]||'';setEditName(item);setEditCat(curCat);setEditingKey('ess_'+i);}} title='Edit'>✏️</button>
+                <button className='hl-delbtn' onClick={()=>setEssentials(essentials.filter((_,j)=>j!==i))}>✕</button>
+              </>
+          }
+        </div>;
+      })}</div>
+      <div className='hl-addrow'>
+        <input className='hl-addinput' type='text' placeholder='Add a regular essential…' value={newEss} onChange={e=>setNewEss(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addEss()}/>
+        <CatSelect value={newEssCat} onChange={setNewEssCat}/>
+        <button className='hl-addbtn' onClick={addEss}>+ Add</button>
+      </div>
+    </div>}
+  </div>;
+}
+
+/* ── NUTRITION TAB ───────────────────────────────────────── */
+function NutritionTab({plan,allRecipes}){
+  const getNut=n=>(!n||SKIP_RECIPE.includes(n))?null:allRecipes.find(r=>r.name===n)?.nutrition||null;
+  const addN=(a,b)=>{if(!a&&!b)return null;const r=a||{kcal:0,protein:0,carbs:0,fat:0,fibre:0},s=b||{kcal:0,protein:0,carbs:0,fat:0,fibre:0};return{kcal:r.kcal+s.kcal,protein:r.protein+s.protein,carbs:r.carbs+s.carbs,fat:r.fat+s.fat,fibre:r.fibre+s.fibre};};
+  const days=DAYS.map(day=>{const d=plan[day];const dn=getNut(d.dinner),an=getNut(d.alex),gn=getNut(d.sam);return{day,dinner:d.dinner,alex:d.alex,sam:d.sam,dn,an,gn,aT:addN(dn,an),gT:addN(dn,gn)};});
+  const planned=days.filter(d=>d.dinner||d.alex||d.sam);
+  const withN=days.filter(d=>d.aT);
+  const avg=useMemo(()=>{
+    if(!withN.length)return null;
+    const tot=withN.reduce((a,d)=>addN(a,d.aT),{kcal:0,protein:0,carbs:0,fat:0,fibre:0});
+    return{kcal:Math.round(tot.kcal/withN.length),protein:Math.round(tot.protein/withN.length),carbs:Math.round(tot.carbs/withN.length),fat:Math.round(tot.fat/withN.length),fibre:Math.round(tot.fibre/withN.length)};
+  },[withN.length]);
+  if(!planned.length)return <div><h1 className='hl-h1'>Nutrition</h1><p className='hl-sub'>Plan your meals to see nutrition data</p><div style={{textAlign:'center',padding:'40px',fontFamily:"'Lora',serif",fontStyle:'italic',color:'#9A8E7A'}}>Add meals in the Meal Plan tab 🥗</div></div>;
+  return <div>
+    <h1 className='hl-h1'>Nutrition</h1>
+    <p className='hl-sub'>Based on planned meals · estimates per serving · dinner shared</p>
+    <div className='hl-ref-note'>📊 Reference daily values: 2,000 kcal · 50g protein · 260g carbs · 70g fat. Macro bar: <span style={{color:'#3A7FBD'}}>■ protein</span> · <span style={{color:'#E8B84B'}}>■ carbs</span> · <span style={{color:'#B07DB0'}}>■ fat</span>. Figures are estimates.</div>
+    {avg&&<div className='hl-sum-grid'>
+      {[{icon:'🔥',val:avg.kcal,unit:'kcal',lbl:'Avg / day',sub:'per person',cls:'c-k'},{icon:'💪',val:avg.protein,unit:'g',lbl:'Protein',sub:'avg per day',cls:'c-p'},{icon:'🌾',val:avg.carbs,unit:'g',lbl:'Carbs',sub:'avg per day',cls:'c-c'},{icon:'🥑',val:avg.fat,unit:'g',lbl:'Fat',sub:'avg per day',cls:'c-f'}].map(c=>(
+        <div key={c.lbl} className='hl-sum-card'><div className='hl-sum-icon'>{c.icon}</div><div><span className={'hl-sum-val '+c.cls}>{c.val}</span><span className='hl-sum-unit'>{c.unit}</span></div><div className='hl-sum-lbl'>{c.lbl}</div><div className='hl-sum-sub'>{c.sub}</div></div>
+      ))}
+    </div>}
+    <div className='hl-day-grid'>
+      {planned.map(d=>(
+        <div key={d.day} className='hl-day-card'>
+          <div className='hl-day-hdr'>{d.day}</div>
+          {[{type:'Dinner',name:d.dinner,nut:d.dn},{type:"Alex's Lunch",name:d.alex,nut:d.an},{type:"Sam's Lunch",name:d.sam,nut:d.gn}].filter(m=>m.name&&!SKIP_RECIPE.includes(m.name)).map(m=>(
+            <div key={m.type} className='hl-day-meal'>
+              <div style={{flex:1}}><div className='hl-meal-type'>{m.type}</div><div className='hl-meal-name'>{m.name}</div>
+                {m.nut&&<div className='hl-mpills'><span className='hl-mpill mp'>{m.nut.protein}g P</span><span className='hl-mpill mc'>{m.nut.carbs}g C</span><span className='hl-mpill mf'>{m.nut.fat}g F</span></div>}
+              </div>
+              {m.nut?<span className='hl-meal-kcal'>{m.nut.kcal}<br/><span style={{fontSize:9,fontWeight:400,color:'#B0A490'}}>kcal</span></span>:<span className='hl-meal-na'>—</span>}
+            </div>
+          ))}
+          {(d.aT||d.gT)?<div className='hl-ptotals'>
+            {[{name:'Alex',total:d.aT},{name:'Sam',total:d.gT}].map(({name,total})=>total&&(
+              <div key={name} className='hl-prow'>
+                <div className='hl-pname'>{name}'s Day Total</div>
+                <div className='hl-mpills'><span className='hl-mpill mk'>🔥 {total.kcal} kcal</span><span className='hl-mpill mp'>💪 {total.protein}g</span><span className='hl-mpill mc'>🌾 {total.carbs}g</span><span className='hl-mpill mf'>🥑 {total.fat}g</span></div>
+                <MacroBar protein={total.protein} carbs={total.carbs} fat={total.fat}/>
+              </div>
+            ))}
+          </div>:<div className='hl-nodata'>No nutrition data for this day</div>}
+        </div>
+      ))}
+    </div>
+  </div>;
+}
+
+/* ── APP ─────────────────────────────────────────────────── */
+/* ── BACKUP MODAL ────────────────────────────────────────── */
+function BackupModal({onClose}){
+  const[msg,setMsg]=useState(null);
+  const[busy,setBusy]=useState(false);
+  const fileRef=useRef(null);
+
+  const download=async()=>{
+    setBusy(true);setMsg(null);
+    try{
+      const res=await fetch(API+'?t='+Date.now());
+      if(!res.ok)throw new Error('Could not fetch data');
+      const data=await res.json();
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const d=new Date();
+      a.href=url;
+      a.download=`homelife-backup-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setMsg({type:'ok',text:'Backup downloaded successfully ✓'});
+    }catch(e){setMsg({type:'err',text:'Download failed: '+e.message});}
+    setBusy(false);
+  };
+
+  const restore=async(e)=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    setBusy(true);setMsg(null);
+    try{
+      const text=await file.text();
+      const data=JSON.parse(text);
+      // Basic validation — must have at least one known key
+      if(!data.plans&&!data.customRecipes&&!data.essentials)
+        throw new Error('This does not look like a valid Home Life backup file.');
+      const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      if(!res.ok)throw new Error('Server rejected the file');
+      setMsg({type:'ok',text:'Backup restored ✓ — refresh the page to see your data.'});
+    }catch(e){setMsg({type:'err',text:'Restore failed: '+e.message});}
+    setBusy(false);
+    // Reset file input so same file can be re-selected if needed
+    if(fileRef.current)fileRef.current.value='';
+  };
+
+  return(
+    <div className='hl-ov' onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className='hl-bkmodal'>
+        <div className='hl-bkmodal-hdr'>
+          <h2>💾 Backup & Restore</h2>
+          <button className='hl-close' onClick={onClose}>✕</button>
+        </div>
+        <div className='hl-bkmodal-body'>
+          {msg&&<div className={`hl-bk-msg ${msg.type==='ok'?'hl-bk-ok':'hl-bk-err'}`}>{msg.text}</div>}
+
+          <div className='hl-bk-row'>
+            <h3>⬇️ Download Backup</h3>
+            <p>Saves everything — meal plans, recipes, shopping lists, essentials — as a JSON file to your device. Do this regularly to keep a safe copy.</p>
+            <button className='hl-bk-btn hl-bk-dl' onClick={download} disabled={busy}>
+              {busy?'Downloading…':'Download backup'}
+            </button>
+          </div>
+
+          <div className='hl-bk-row'>
+            <h3>⬆️ Restore from Backup</h3>
+            <p>Upload a previously downloaded backup file to restore your data. This will overwrite everything currently on the server.</p>
+            <input ref={fileRef} type='file' accept='.json' style={{display:'none'}} onChange={restore}/>
+            <button className='hl-bk-btn hl-bk-up' onClick={()=>fileRef.current?.click()} disabled={busy}>
+              {busy?'Restoring…':'Choose backup file…'}
+            </button>
+          </div>
+
+          <div style={{fontSize:11,fontFamily:"'Lora',serif",fontStyle:'italic',color:'#B0A490',lineHeight:1.6,paddingTop:4}}>
+            Tip: your backup file is named with today's date so you can keep multiple versions. Store them in Google Drive or iCloud for safekeeping.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── PANTRY ──────────────────────────────────────────────── */
+const UNITS=['','g','kg','ml','l','tsp','tbsp','cup','oz','lb','can','bag','bunch','clove','rasher','slice'];
+
+function PantryTab({pantry,onSave,plan,allRecipes,viewKey}){
+  const[newName,setNewName]=useState('');
+  const[newAmt,setNewAmt]=useState('');
+  const[newUnit,setNewUnit]=useState('');
+  const[editKey,setEditKey]=useState(null);
+  const[editAmt,setEditAmt]=useState('');
+  const[editUnit,setEditUnit]=useState('');
+  const[showUseModal,setShowUseModal]=useState(false);
+  const[usePreview,setUsePreview]=useState([]);
+
+  const items=Object.entries(pantry).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+
+  const grouped=SECTIONS.map(s=>({
+    ...s,
+    items:items.filter(([k,v])=>(v.category||cat(v.name))===s.id)
+  })).filter(s=>s.items.length>0);
+
+  // Items with no recognised section
+  const uncategorised=items.filter(([k,v])=>!SECTIONS.some(s=>s.id===(v.category||cat(v.name))));
+
+  const addItem=()=>{
+    const name=newName.trim();if(!name)return;
+    const key=pantryKey(name);
+    const amount=parseFloat(newAmt)||0;
+    const unit=newUnit;
+    const category=cat(name);
+    const updated={...pantry,[key]:{name,amount,unit,category}};
+    onSave(updated);
+    setNewName('');setNewAmt('');setNewUnit('');
+  };
+
+  const removeItem=(key)=>{
+    const updated={...pantry};delete updated[key];onSave(updated);
+  };
+
+  const saveEdit=(key)=>{
+    const item=pantry[key];
+    const updated={...pantry,[key]:{...item,amount:parseFloat(editAmt)||0,unit:editUnit}};
+    onSave(updated);setEditKey(null);
+  };
+
+  // Build preview of what this week's recipes will use from pantry
+  const buildUsePreview=()=>{
+    const changes=[];
+    const bulkCookList=plan.bulkCook||[];
+    const skipList=plan.skipShopping||[];
+    const recipeUse={};
+    DAYS.forEach(day=>{
+      const dp=plan[day];if(!dp)return;
+      [['dinner',2],['alex',1],['sam',1]].forEach(([slot,count])=>{
+        const name=dp[slot];
+        if(!name||SKIP_RECIPE.includes(name))return;
+        if(skipList.includes(day+'_'+slot))return;
+        const rec=allRecipes.find(r=>r.name===name);
+        if(!rec)return;
+        const batches=bulkCookList.includes(name)?1:Math.max(1,Math.ceil(count/(rec.serves||1)));
+        rec.ingredients?.forEach(ing=>{
+          const parsed=parseIngredient(ing);
+          const key=pantryKey(parsed.baseName||ing);
+          if(!recipeUse[key])recipeUse[key]={key,name:ing,amount:0,unit:parsed.unit};
+          recipeUse[key].amount+=parsed.amount*(batches||1);
+        });
+      });
+    });
+    Object.values(recipeUse).forEach(use=>{
+      const have=pantry[use.key];
+      if(!have)return;
+      const haveBase=toBase(have.amount,have.unit||'');
+      const useBase=toBase(use.amount,use.unit||'');
+      if(haveBase.unit!==useBase.unit&&haveBase.unit!==''&&useBase.unit!=='')return;
+      const deduct=Math.min(haveBase.amount,useBase.amount);
+      const newAmt=Math.max(0,haveBase.amount-deduct);
+      // Convert back
+      let displayAmt=newAmt;
+      let displayUnit=have.unit;
+      if(have.unit==='g'&&newAmt>=1000){displayAmt=newAmt/1000;displayUnit='kg';}
+      if(have.unit==='ml'&&newAmt>=1000){displayAmt=newAmt/1000;displayUnit='l';}
+      changes.push({key:use.key,name:have.name,from:have.amount,fromUnit:have.unit,to:parseFloat(displayAmt.toFixed(2)),toUnit:displayUnit,used:deduct,ingName:use.name});
+    });
+    setUsePreview(changes);
+    setShowUseModal(true);
+  };
+
+  const confirmUse=()=>{
+    const updated={...pantry};
+    usePreview.forEach(({key,to,toUnit})=>{
+      if(updated[key]){
+        updated[key]={...updated[key],amount:to,unit:toUnit};
+      }
+    });
+    onSave(updated);
+    setShowUseModal(false);
+  };
+
+  const fmtAmt=(amount,unit)=>{
+    if(!amount&&amount!==0)return '?';
+    const n=parseFloat(amount.toFixed(2));
+    return n+(unit?` ${unit}`:'');
+  };
+
+  function ItemRow({k,v}){
+    const isEditing=editKey===k;
+    const low=v.amount>0&&v.amount<=2&&!['g','kg','ml','l'].includes(v.unit);
+    const empty=v.amount===0||v.amount===null||v.amount===undefined;
+    return <div className='hl-pantry-item'>
+      {isEditing
+        ?<>
+            <input className='hl-pantry-num' type='number' min='0' step='0.1' value={editAmt} onChange={e=>setEditAmt(e.target.value)} autoFocus onKeyDown={e=>{if(e.key==='Enter')saveEdit(k);if(e.key==='Escape')setEditKey(null);}}/>
+            <select className='hl-pantry-unit' value={editUnit} onChange={e=>setEditUnit(e.target.value)}>
+              {UNITS.map(u=><option key={u} value={u}>{u||'count'}</option>)}
+            </select>
+            <button className='hl-inline-save' onClick={()=>saveEdit(k)}>✓</button>
+            <button className='hl-editbtn' onClick={()=>setEditKey(null)}>✕</button>
+          </>
+        :<>
+            <span className={'hl-pantry-amt'+(empty?' empty':low?' low':'')} onClick={()=>{setEditKey(k);setEditAmt(String(v.amount||0));setEditUnit(v.unit||'');}}>
+              {empty?'Out':fmtAmt(v.amount,v.unit)}
+            </span>
+            <span className='hl-pantry-name'>{v.name}</span>
+            <button className='hl-editbtn' onClick={()=>{setEditKey(k);setEditAmt(String(v.amount||0));setEditUnit(v.unit||'');}} title='Edit'>✏️</button>
+            <button className='hl-delbtn' onClick={()=>removeItem(k)}>✕</button>
+          </>
+      }
+    </div>;
+  }
+
+  return <div>
+    <div className='hl-row'>
+      <div>
+        <h1 className='hl-h1'>🧊 Fridge & Pantry</h1>
+        <p className='hl-sub'>Track what you have — ingredients are skipped from the shopping list if you have enough</p>
+      </div>
+      <button className='hl-week-use-btn' onClick={buildUsePreview} title="Deduct this week's recipe ingredients from your stock">
+        ✅ Use this week's recipes
+      </button>
+    </div>
+
+    {/* Add item */}
+    <div style={{background:'white',borderRadius:14,padding:'14px 16px',marginBottom:16,boxShadow:'0 2px 12px rgba(42,74,30,.07)',display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+      <input className='hl-pantry-input' placeholder='Item name (e.g. Onions, Chicken breast, Cheddar…)' value={newName} onChange={e=>setNewName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addItem()}/>
+      <input className='hl-pantry-num' type='number' min='0' step='0.1' placeholder='Qty' value={newAmt} onChange={e=>setNewAmt(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addItem()}/>
+      <select className='hl-pantry-unit' value={newUnit} onChange={e=>setNewUnit(e.target.value)}>
+        {UNITS.map(u=><option key={u} value={u}>{u||'count'}</option>)}
+      </select>
+      <button className='hl-addbtn' onClick={addItem} style={{background:'#2A4A1E',padding:'6px 14px',fontSize:12}}>+ Add to pantry</button>
+    </div>
+
+    {items.length===0
+      ?<div style={{textAlign:'center',padding:'48px 24px',fontFamily:"'Lora',serif",fontStyle:'italic',color:'#9A8E7A',background:'white',borderRadius:16,boxShadow:'0 2px 12px rgba(42,74,30,.07)'}}>
+          Add what you have in your fridge and cupboards.<br/>The shopping list will automatically skip things you already have enough of.
+        </div>
+      :<div className='hl-pantry-grid'>
+          {[...grouped,...(uncategorised.length>0?[{id:'other',label:'🛒 Other',items:uncategorised}]:[])].map(sec=>(
+            <div key={sec.id} className='hl-pantry-card'>
+              <div className='hl-pantry-ch'><h3>{sec.label}</h3><span style={{fontSize:10,color:'#8CAD78'}}>{sec.items.length}</span></div>
+              {sec.items.map(([k,v])=><ItemRow key={k} k={k} v={v}/>)}
+            </div>
+          ))}
+        </div>
+    }
+
+    {/* Use this week modal */}
+    {showUseModal&&ReactDOM.createPortal(
+      <div className='hl-ov' onClick={e=>{if(e.target===e.currentTarget)setShowUseModal(false);}}>
+        <div className='hl-modal' style={{maxWidth:480}}>
+          <div className='hl-mhdr'><h2>Use this week's recipes</h2><button className='hl-close' onClick={()=>setShowUseModal(false)}>✕</button></div>
+          <div style={{padding:'16px 20px',maxHeight:'60vh',overflowY:'auto'}}>
+            {usePreview.length===0
+              ?<p style={{fontFamily:"'Lora',serif",fontStyle:'italic',color:'#9A8E7A',textAlign:'center',padding:'20px 0'}}>None of this week's recipe ingredients are tracked in your pantry yet.</p>
+              :<>
+                  <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:'#7A6B52',marginBottom:12}}>These pantry quantities will be deducted based on this week's meal plan:</p>
+                  {usePreview.map(({key,name,from,fromUnit,to,toUnit,ingName})=>(
+                    <div key={key} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:'1px solid #F0EBE0',fontFamily:"'DM Sans',sans-serif",fontSize:12}}>
+                      <span style={{flex:1,color:'#2C2416'}}>{name}</span>
+                      <span style={{color:'#9A8E7A',textDecoration:'line-through'}}>{fmtAmt(from,fromUnit)}</span>
+                      <span style={{color:'#2A4A1E',fontWeight:600}}>→ {to===0?'Empty':fmtAmt(to,toUnit)}</span>
+                    </div>
+                  ))}
+                </>
+            }
+          </div>
+          <div style={{padding:'12px 20px',borderTop:'1px solid #F0EBE0',display:'flex',gap:10,justifyContent:'flex-end'}}>
+            <button className='hl-clr' onClick={()=>setShowUseModal(false)}>Cancel</button>
+            {usePreview.length>0&&<button className='hl-week-use-btn' onClick={confirmUse}>Confirm &amp; deduct</button>}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
+  </div>;
+}
+
+function App(){
+  const[tab,setTab]=useState('plan');
+  const[showBackup,setShowBackup]=useState(false);
+  const[viewKey,setViewKey]=useState(getWeekKey(0));
+  const[syncStatus,setSyncStatus]=useState('loading'); // loading | saved | saving | error
+  const[loadError,setLoadError]=useState(null);
+  const[stepsRec,setStepsRec]=useState(null);
+
+  // Synced state
+  const[allPlans,setAllPlans]=useState({});
+  const[customRecipes,setCustomRecipes]=useState([]);
+  const[overrides,setOverrides]=useState({});
+  const[deletedRecipes,setDeletedRecipes]=useState([]); // names of deleted built-ins
+  const[essentials,setEssentials]=useState(DEF_ESS);
+  const[shopChecked,setShopChecked]=useState({}); // { weekKey: { ingredientKey: bool } }
+  const[shopEdits,setShopEdits]=useState({});     // { weekKey: { itemKey: {qty,name} } }
+  const[shopExtras,setShopExtrasState]=useState({}); // { weekKey: [{ id, text }] }
+  const[shopRemoved,setShopRemovedState]=useState({}); // { weekKey: { itemKey: true } }
+  const[catOverrides,setCatOverridesState]=useState({}); // { ingredientKey: sectionId }
+  const[pantry,setPantryState]=useState({}); // { pantryKey: { name, amount, unit, category } }
+  const[essChecked,setEssChecked]=useState({});   // { itemKey: bool }
+  const[adhoc,setAdhocState]=useState({});         // { weekKey: [{ id, text }] }
+  const[adhocChecked,setAdhocChecked]=useState({}); // { 'adhoc_id': bool }
+
+  const saveTimer=useRef(null);
+  const latestData=useRef({});
+  const latestPending=useRef({});
+
+  // Build snapshot of everything to save
+  const snapshot=useCallback(()=>({
+    plans:allPlans,customRecipes,overrides,essentials,shopChecked,essChecked
+  }),[allPlans,customRecipes,overrides,essentials,shopChecked,essChecked]);
+
+  // Debounced save to server
+  const scheduleSave=useCallback((changedKey,changedVal)=>{
+    setSyncStatus('saving');
+    if(saveTimer.current)clearTimeout(saveTimer.current);
+    // Store the pending change so if multiple rapid changes come in we send the latest
+    latestPending.current={...latestPending.current,[changedKey]:changedVal};
+    saveTimer.current=setTimeout(async()=>{
+      try{
+        // Always fetch the freshest server state first, then merge our changes on top.
+        // This means if another device saved while we were working, we keep their changes
+        // and only overwrite the specific fields we actually changed.
+        const getRes=await fetch(API+'?t='+Date.now());
+        const serverData=getRes.ok?await getRes.json():{};
+        const merged={
+          plans:serverData.plans||{},
+          customRecipes:serverData.customRecipes||[],
+          overrides:serverData.overrides||{},
+          deletedRecipes:serverData.deletedRecipes||[],
+          essentials:serverData.essentials||DEF_ESS,
+          shopChecked:serverData.shopChecked||{},
+          shopEdits:serverData.shopEdits||{},
+          shopExtras:serverData.shopExtras||{},
+          shopRemoved:serverData.shopRemoved||{},
+          catOverrides:serverData.catOverrides||{},
+          essChecked:serverData.essChecked||{},
+          adhoc:serverData.adhoc||{},
+          adhocChecked:serverData.adhocChecked||{},
+          ...latestPending.current, // our changes win for fields we actually touched
+        };
+        latestPending.current={};
+        const postRes=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
+        if(!postRes.ok)throw new Error('save failed');
+        setSyncStatus('saved');
+      }catch(e){
+        setSyncStatus('error');
+      }
+    },300);
+  },[]);
+
+  // Load from server on mount
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const res=await fetch(API+'?t='+Date.now());
+        if(!res.ok)throw new Error('load failed');
+        const d=await res.json();
+        if(d.plans)setAllPlans(migratePlans(d.plans));
+        if(d.customRecipes)setCustomRecipes(d.customRecipes);
+        if(d.overrides)setOverrides(d.overrides);
+        if(d.deletedRecipes)setDeletedRecipes(d.deletedRecipes);
+        if(d.essentials)setEssentials(d.essentials);
+        if(d.shopChecked)setShopChecked(d.shopChecked);
+        if(d.shopEdits)setShopEdits(d.shopEdits);
+        if(d.shopExtras)setShopExtrasState(d.shopExtras);
+        if(d.shopRemoved)setShopRemovedState(d.shopRemoved);
+        if(d.catOverrides)setCatOverridesState(d.catOverrides);
+        if(d.pantry)setPantryState(d.pantry);
+        if(d.essChecked)setEssChecked(d.essChecked);
+        if(d.adhoc)setAdhocState(Array.isArray(d.adhoc)?{}:d.adhoc); // migrate old array to week-keyed object
+        if(d.adhocChecked)setAdhocChecked(d.adhocChecked);
+        setSyncStatus('saved');
+      }catch(e){
+        setSyncStatus('error');
+        setLoadError('Could not connect to server. Check homelife-data.php is uploaded and the folder is writable.');
+      }
+    })();
+  },[]);
+
+  // Re-fetch when tab regains focus (picks up changes from other devices)
+  useEffect(()=>{
+    const onFocus=async()=>{
+      try{
+        const res=await fetch(API+'?t='+Date.now());
+        if(!res.ok)return;
+        const d=await res.json();
+        if(d.plans)setAllPlans(migratePlans(d.plans));
+        if(d.customRecipes)setCustomRecipes(d.customRecipes);
+        if(d.overrides)setOverrides(d.overrides);
+        if(d.deletedRecipes)setDeletedRecipes(d.deletedRecipes);
+        if(d.essentials)setEssentials(d.essentials);
+        if(d.shopChecked)setShopChecked(d.shopChecked);
+        if(d.shopEdits)setShopEdits(d.shopEdits);
+        if(d.shopExtras)setShopExtrasState(d.shopExtras);
+        if(d.shopRemoved)setShopRemovedState(d.shopRemoved);
+        if(d.catOverrides)setCatOverridesState(d.catOverrides);
+        if(d.pantry)setPantryState(d.pantry);
+        if(d.essChecked)setEssChecked(d.essChecked);
+        if(d.adhoc)setAdhocState(Array.isArray(d.adhoc)?{}:d.adhoc); // migrate old array to week-keyed object
+        if(d.adhocChecked)setAdhocChecked(d.adhocChecked);
+        setSyncStatus('saved');
+      }catch(e){}
+    };
+    window.addEventListener('focus',onFocus);
+    // Also re-fetch when page becomes visible (handles mobile app switching)
+    const onVisible=()=>{ if(document.visibilityState==='visible') onFocus(); };
+    document.addEventListener('visibilitychange',onVisible);
+    return()=>{
+      window.removeEventListener('focus',onFocus);
+      document.removeEventListener('visibilitychange',onVisible);
+    };
+  },[]);
+
+  // Flush any pending debounced save immediately when page is hidden (user switches app/tab)
+  useEffect(()=>{
+    const onHide=()=>{
+      if(document.visibilityState==='hidden'&&saveTimer.current){
+        clearTimeout(saveTimer.current);
+        saveTimer.current=null;
+        // Fire the save immediately using the pending data
+        const pending=latestPending.current;
+        if(Object.keys(pending).length===0)return;
+        latestPending.current={};
+        (async()=>{
+          try{
+            const getRes=await fetch(API+'?t='+Date.now());
+            const serverData=getRes.ok?await getRes.json():{};
+            const merged={
+              plans:serverData.plans||{},
+              customRecipes:serverData.customRecipes||[],
+              overrides:serverData.overrides||{},
+              deletedRecipes:serverData.deletedRecipes||[],
+              essentials:serverData.essentials||DEF_ESS,
+              shopChecked:serverData.shopChecked||{},
+              shopEdits:serverData.shopEdits||{},
+              shopExtras:serverData.shopExtras||{},
+              shopRemoved:serverData.shopRemoved||{},
+              catOverrides:serverData.catOverrides||{},
+              essChecked:serverData.essChecked||{},
+              adhoc:serverData.adhoc||{},
+              adhocChecked:serverData.adhocChecked||{},
+              ...pending,
+            };
+            await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(merged)});
+          }catch(e){}
+        })();
+      }
+    };
+    document.addEventListener('visibilitychange',onHide);
+    return()=>document.removeEventListener('visibilitychange',onHide);
+  },[]);
+
+  // Track latest data ref for save
+  useEffect(()=>{
+    latestData.current={allPlans,customRecipes,overrides,essentials,shopChecked,essChecked};
+  },[allPlans,customRecipes,overrides,essentials,shopChecked,essChecked]);
+
+  // Setters that also trigger save
+  const setAndSave=(setter,key)=>(val)=>{
+    setter(val);
+    // We need a tiny timeout to get the new value merged
+    setTimeout(()=>scheduleSave({...latestData.current,[key]:typeof val==='function'?val(latestData.current[key]):val}),0);
+  };
+
+  const plan=allPlans[viewKey]||{...DEF_PLAN};
+
+  const setPlan=(p)=>{
+    const val=typeof p==='function'?p(allPlans[viewKey]||{...DEF_PLAN}):p;
+    const updated={...allPlans,[viewKey]:val};
+    setAllPlans(updated);
+    scheduleSave('plans',updated);
+  };
+
+  const saveCustomRecipes=(val)=>{setCustomRecipes(val);scheduleSave('customRecipes',val);};
+  const saveOverrides=(val)=>{setOverrides(val);scheduleSave('overrides',val);};
+  const saveEssentials=(val)=>{setEssentials(val);scheduleSave('essentials',val);};
+  const saveAdhoc=(val)=>{setAdhocState(val);scheduleSave('adhoc',val);};
+  const saveShopExtras=(val)=>{setShopExtrasState(val);scheduleSave('shopExtras',val);};
+  const saveShopRemoved=(val)=>{setShopRemovedState(val);scheduleSave('shopRemoved',val);};
+  const saveCatOverrides=(val)=>{setCatOverridesState(val);scheduleSave('catOverrides',val);};
+  const savePantry=(val)=>{setPantryState(val);scheduleSave('pantry',val);};
+
+  const onToggleShop=(k)=>{
+    const updated={...shopChecked,[viewKey]:{...(shopChecked[viewKey]||{}),[k]:!(shopChecked[viewKey]?.[k])}};
+    setShopChecked(updated);scheduleSave('shopChecked',updated);
+  };
+  const onToggleEss=(k)=>{
+    const updated={...essChecked,[k]:!essChecked[k]};
+    setEssChecked(updated);scheduleSave('essChecked',updated);
+  };
+  const onToggleAdhoc=(k)=>{
+    const updated={...adhocChecked,[k]:!adhocChecked[k]};
+    setAdhocChecked(updated);scheduleSave('adhocChecked',updated);
+  };
+  const onShopEdit=(k,val)=>{
+    const weekEdits=shopEdits[viewKey]||{};
+    const updatedWeek=val===null
+      ?Object.fromEntries(Object.entries(weekEdits).filter(([ek])=>ek!==k))
+      :{...weekEdits,[k]:val};
+    const updated={...shopEdits,[viewKey]:updatedWeek};
+    setShopEdits(updated);scheduleSave('shopEdits',updated);
+  };
+  const onShopRemove=(k)=>{
+    const updated={...shopRemoved,[viewKey]:{...(shopRemoved[viewKey]||{}),[k]:true}};
+    saveShopRemoved(updated);
+  };
+  const onShopRestore=()=>{
+    const updated={...shopRemoved,[viewKey]:{}};
+    saveShopRemoved(updated);
+  };
+
+  const allRecipes=useMemo(()=>{
+    const base=BUILT_IN
+      .filter(r=>!deletedRecipes.includes(r.name))
+      .map(r=>overrides[r.name]?{...r,...overrides[r.name]}:r);
+    return[...base,...customRecipes];
+  },[overrides,customRecipes,deletedRecipes]);
+
+  const saveRecipe=(r)=>{
+    const isBuiltIn=BUILT_IN.some(b=>b.name===r.name);
+    if(isBuiltIn){const no={...overrides,[r.name]:r};saveOverrides(no);}
+    else{const nc=customRecipes.map(c=>c.name===r.name?r:c);saveCustomRecipes(nc);}
+  };
+  const addRecipe=(r)=>{const nc=[...customRecipes,r];saveCustomRecipes(nc);};
+  const delRecipe=(name)=>{
+    const isBuiltIn=BUILT_IN.some(b=>b.name===name);
+    if(isBuiltIn){
+      const nd=[...deletedRecipes,name];
+      setDeletedRecipes(nd);scheduleSave('deletedRecipes',nd);
+    } else {
+      const nc=customRecipes.filter(r=>r.name!==name);saveCustomRecipes(nc);
+    }
+  };
+  const restoreRecipe=(name)=>{
+    const nd=deletedRecipes.filter(n=>n!==name);
+    setDeletedRecipes(nd);scheduleSave('deletedRecipes',nd);
+  };
+
+  const weekKeys=WEEK_OFFSETS.map(o=>getWeekKey(o));
+  const curIdx=weekKeys.indexOf(viewKey);
+
+  // When navigating forward, carry unticked items from previous week into next week's extras
+  const navigateWeek=(newKey)=>{
+    const newIdx=weekKeys.indexOf(newKey);
+    if(newIdx>curIdx){
+      const prevShopChecked=shopChecked[viewKey]||{};
+      const prevEdits=shopEdits[viewKey]||{};
+      const prevExtras=shopExtras[viewKey]||[];
+      const nextExtras=shopExtras[newKey]||[];
+      const carryItems=[];
+      const alreadyIn=(text)=>nextExtras.some(e=>e.text===text)||carryItems.some(e=>e.text===text);
+
+      // Carry extras that were explicitly left unticked
+      prevExtras.forEach(item=>{
+        const k='extra_'+item.id;
+        if(prevShopChecked[k]===false){
+          const editedName=prevEdits[k]?.name||item.text;
+          if(!alreadyIn(editedName))
+            carryItems.push({id:Date.now()+Math.random(),text:editedName,carriedOver:true});
+        }
+      });
+
+      if(carryItems.length>0){
+        const updated={...shopExtras,[newKey]:[...nextExtras,...carryItems]};
+        saveShopExtras(updated);
+      }
+
+      // Reset all essential ticks so they start unticked for the new week
+      setEssChecked({});
+      scheduleSave('essChecked',{});
+    }
+    setViewKey(newKey);
+  };
+
+  const syncLabels={saved:['Synced ✓','sync-saved'],saving:['Saving…','sync-saving'],error:['Sync error','sync-error'],loading:['Connecting…','sync-loading']};
+  const[syncTxt,syncCls]=syncLabels[syncStatus]||syncLabels.saved;
+
+  const navTabs=[{id:'plan',label:'🍽 Meal Plan'},{id:'recipes',label:'📖 Recipes'},{id:'shopping',label:'🛒 Shopping'},{id:'nutrition',label:'📊 Nutrition'},{id:'pantry',label:'🧊 Pantry'}];
+
+  if(syncStatus==='loading')return <div className='hl'><div className='hl-hdr'><div className='hl-top'><div><div className='hl-logo'>Home <em>Life</em></div></div></div><div className='hl-nav'/></div><div className='hl-loading'><div className='hl-loading-spinner'/><div className='hl-loading-txt'>Loading your family data…</div></div></div>;
+
+  return <>
+    {stepsRec&&<StepsModal recipe={stepsRec} onClose={()=>setStepsRec(null)}/>}
+    {showBackup&&<BackupModal onClose={()=>setShowBackup(false)}/>}
+    <div className='hl'>
+      <div className='hl-hdr'>
+        <div className='hl-top'>
+          <div><div className='hl-logo'>Home <em>Life</em></div><div className='hl-tag'>meals · recipes · shopping · nutrition</div></div>
+          <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+            <button className='hl-backup-btn' onClick={()=>setShowBackup(true)}>💾 Backup</button>
+            <div className={`hl-sync ${syncCls}`}><div className='hl-sync-dot'/><span className='hl-sync-txt'>{syncTxt}</span></div>
+            <div className='hl-wk'>
+              <button className='hl-wkarr' onClick={()=>navigateWeek(weekKeys[curIdx-1])} disabled={curIdx<=0}>◀</button>
+              <div className='hl-wkinfo'>
+                <div className='hl-wklbl'>{keyToRelLabel(viewKey)}</div>
+                <div className='hl-wkdate'>{keyToLabel(viewKey)}</div>
+                <div className='hl-wkdots'>{weekKeys.map(k=><div key={k} className={'hl-wkdot'+(k===viewKey?' cur':allPlans[k]?' has':'')} onClick={()=>navigateWeek(k)} title={keyToRelLabel(k)}/>)}</div>
+              </div>
+              <button className='hl-wkarr' onClick={()=>navigateWeek(weekKeys[curIdx+1])} disabled={curIdx>=weekKeys.length-1}>▶</button>
+            </div>
+          </div>
+        </div>
+        <div className='hl-nav'>{navTabs.map(t=><button key={t.id} className={'hl-nb'+(tab===t.id?' on':'')} onClick={()=>setTab(t.id)}>{t.label}</button>)}</div>
+      </div>
+      <div className='hl-body'>
+        {loadError&&<div className='hl-err-banner'>⚠️ {loadError}</div>}
+        {tab==='plan'&&<MealPlan plan={plan} setPlan={setPlan} allRecipes={allRecipes} onViewSteps={setStepsRec}/>}
+        {tab==='recipes'&&<RecipesTab allRecipes={allRecipes} onImport={addRecipe} onSave={saveRecipe} onDelete={delRecipe} deletedRecipes={deletedRecipes} onRestore={restoreRecipe}/>}
+        {tab==='shopping'&&<Shopping plan={plan} allRecipes={allRecipes} viewKey={viewKey} shopChecked={shopChecked} onToggleShop={onToggleShop} shopEdits={shopEdits} onShopEdit={onShopEdit} shopRemoved={shopRemoved} onShopRemove={onShopRemove} onShopRestore={onShopRestore} shopExtras={shopExtras} setShopExtras={saveShopExtras} essentials={essentials} setEssentials={saveEssentials} essChecked={essChecked} onToggleEss={onToggleEss} adhoc={adhoc} setAdhoc={saveAdhoc} adhocChecked={adhocChecked} onToggleAdhoc={onToggleAdhoc} catOverrides={catOverrides} onCatOverride={saveCatOverrides} pantry={pantry}/>}
+        {tab==='nutrition'&&<NutritionTab plan={plan} allRecipes={allRecipes}/>}
+        {tab==='pantry'&&<PantryTab pantry={pantry} onSave={savePantry} plan={plan} allRecipes={allRecipes} viewKey={viewKey}/>}
+      </div>
+    </div>
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('hl-root')).render(<App/>);
+</script>
+</body>
+</html>

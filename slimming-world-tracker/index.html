@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#c85a2e">
+<title>Slimming World Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Georgia, serif; background: #fdf8f4; color: #2d2118; min-height: 100vh; }
+  .header { background: linear-gradient(135deg, #c85a2e 0%, #e8834d 60%, #f5a97a 100%); padding: 22px 20px 14px; text-align: center; box-shadow: 0 4px 20px rgba(200,90,46,0.25); }
+  .header-eyebrow { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 4px; }
+  .header h1 { font-size: 26px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  .header-date { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 3px; }
+  .tabs { display: flex; background: #fff; border-bottom: 1px solid #ede0d4; }
+  .tab { flex: 1; padding: 12px 0; border: none; background: none; cursor: pointer; font-size: 14px; font-family: Georgia, serif; color: #8a6a56; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab.active { color: #c85a2e; border-bottom-color: #c85a2e; font-weight: 700; }
+  .content { max-width: 500px; margin: 0 auto; padding: 18px 14px 60px; }
+  .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #f0e4d8; }
+  .card-label { font-size: 11px; color: #8a6a56; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .card-sublabel { font-size: 12px; color: #bba898; margin-bottom: 12px; margin-top: -6px; }
+  .syn-count { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .syn-number { font-size: 24px; font-weight: 700; }
+  .syn-bar-bg { height: 10px; background: #f0e4d8; border-radius: 99px; overflow: hidden; }
+  .syn-bar-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+  .syn-remaining { margin-top: 8px; font-size: 13px; font-weight: 600; text-align: right; }
+  .input-row { display: flex; gap: 8px; margin-bottom: 0; }
+  input[type=text], input[type=number], input[type=date] {
+    width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #e8d8cc;
+    font-size: 14px; font-family: Georgia, serif; background: #fdf8f4; color: #2d2118;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus { border-color: #c85a2e; }
+  .btn { padding: 10px 18px; border-radius: 10px; border: none; background: linear-gradient(135deg, #c85a2e, #e8834d); color: #fff; font-family: Georgia, serif; font-size: 14px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-blue { background: linear-gradient(135deg, #5a7fc8, #7a9fe8); }
+  .btn-green { background: linear-gradient(135deg, #16a34a, #4ade80); }
+  .btn-grey { background: #e8d8cc; color: #5a3e30; }
+  .btn-full { width: 100%; margin-top: 8px; }
+  .lookup-result { margin-top: 12px; padding: 14px; border-radius: 12px; }
+  .lookup-result.syns { background: #fef9ec; border: 1.5px solid #fcd34d; }
+  .lookup-result.free { background: #f0fdf4; border: 1.5px solid #86efac; }
+  .lookup-result.none { background: #fef2f2; border: 1.5px solid #fca5a5; }
+  .lookup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .lookup-food { font-size: 14px; font-weight: 700; color: #2d2118; }
+  .lookup-value { font-size: 20px; font-weight: 700; }
+  .lookup-note { font-size: 12px; color: #8a6a56; margin-bottom: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 10px; margin-left: 6px; }
+  .badge-book { background: #dbeafe; color: #1e40af; }
+  .badge-free { background: #dcfce7; color: #16a34a; }
+  .adjust-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .adjust-row span { font-size: 12px; color: #8a6a56; }
+  .adjust-row input { width: 80px; padding: 6px 10px; flex: none; }
+  .he-row { display: flex; gap: 10px; }
+  .he-btn { flex: 1; padding: 12px 10px; border-radius: 12px; border: 2px solid #e8d8cc; background: #fff; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .he-btn.active { border-color: #c85a2e; background: #fef0e8; }
+  .he-icon { font-size: 16px; }
+  .he-label { font-size: 13px; font-weight: 700; color: #2d2118; margin-top: 4px; }
+  .he-desc { font-size: 11px; color: #a08070; margin-top: 2px; }
+  .meal-types { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .meal-type-btn { padding: 5px 12px; border-radius: 99px; border: 1.5px solid #e8d8cc; background: #fff; cursor: pointer; font-size: 12px; color: #8a6a56; font-family: Georgia, serif; transition: all 0.2s; }
+  .meal-type-btn.active { border-color: #c85a2e; background: #fef0e8; color: #c85a2e; }
+  .log-list { margin-top: 14px; border-top: 1px solid #f0e4d8; padding-top: 12px; }
+  .log-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f5ece4; }
+  .log-item:last-child { border-bottom: none; }
+  .log-item-name { font-size: 14px; }
+  .log-item-time { color: #bba898; font-size: 12px; margin-left: 6px; }
+  .log-item-right { display: flex; align-items: center; gap: 10px; }
+  .log-syn-val { font-weight: 700; color: #c85a2e; }
+  .remove-btn { background: none; border: none; cursor: pointer; color: #cbb8ae; font-size: 16px; padding: 0; line-height: 1; }
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+  .section-label.orange { color: #c85a2e; }
+  .section-label.green { color: #16a34a; }
+  .meal-section { margin-bottom: 10px; }
+  .history-card { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0e4d8; }
+  .history-card.over { border-color: #fecaca; }
+  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .history-date { font-weight: 700; font-size: 15px; }
+  .history-syns { font-weight: 700; font-size: 15px; }
+  .history-meals { font-size: 13px; color: #8a6a56; }
+  .history-tags { display: flex; gap: 8px; margin-top: 8px; }
+  .he-tag { font-size: 11px; background: #fef0e8; color: #c85a2e; padding: 2px 8px; border-radius: 99px; border: 1px solid #f5c9a8; }
+  .weight-banner { background: linear-gradient(135deg, #c85a2e, #f5a97a); border-radius: 16px; padding: 20px; margin-bottom: 16px; color: #fff; text-align: center; }
+  .weight-banner-label { font-size: 11px; opacity: 0.85; letter-spacing: 2px; text-transform: uppercase; }
+  .weight-banner-num { font-size: 36px; font-weight: 700; margin-top: 4px; }
+  .weight-banner-sub { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .weight-log-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f5ece4; }
+  .weight-log-item:last-child { border-bottom: none; }
+  .weight-date { font-size: 14px; font-weight: 600; }
+  .weight-diff { font-size: 12px; }
+  .weight-right { display: flex; align-items: center; gap: 10px; }
+  .weight-val { font-weight: 700; font-size: 16px; }
+  .empty-state { text-align: center; color: #bba898; padding: 40px 0; font-size: 15px; }
+
+  /* Search results */
+  .search-results { margin-top: 10px; border: 1.5px solid #e8d8cc; border-radius: 10px; overflow: hidden; max-height: 220px; overflow-y: auto; }
+  .search-result-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f5ece4; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s; }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: #fef0e8; }
+  .search-result-name { font-size: 13px; color: #2d2118; }
+  .search-result-note { font-size: 11px; color: #bba898; }
+  .search-result-syns { font-weight: 700; font-size: 14px; color: #c85a2e; }
+  .search-result-free { font-weight: 700; font-size: 13px; color: #16a34a; }
+  .no-results { padding: 12px 14px; font-size: 13px; color: #bba898; }
+
+  @media (max-width: 380px) {
+    .header h1 { font-size: 22px; }
+    .content { padding: 14px 10px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Your Journey</div>
+  <h1>Slimming World Tracker</h1>
+  <div class="header-date" id="headerDate"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today')">Today</button>
+  <button class="tab" onclick="switchTab('history')">History</button>
+  <button class="tab" onclick="switchTab('weight')">Weight</button>
+</div>
+
+<div class="content">
+  <div id="tab-today"></div>
+  <div id="tab-history" style="display:none"></div>
+  <div id="tab-weight" style="display:none"></div>
+</div>
+
+<script>
+// ============================================================
+// SYN DATABASE — from Slimming World book
+// ============================================================
+const SYN_DB = [
+  // Free Foods
+  {name:"Fresh vegetables (all types, cooked without fat)",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Fresh fruit (all types)",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Chicken breast (no skin, no fat)",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Turkey breast (lean)",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Lean beef",syns:0,note:"Free Food - lean cuts",free:true},
+  {name:"Lean pork",syns:0,note:"Free Food - lean cuts",free:true},
+  {name:"Ham (lean only)",syns:0,note:"Free Food",free:true},
+  {name:"Gammon (lean only)",syns:0,note:"Free Food",free:true},
+  {name:"Eggs (boiled, poached, scrambled, fried in low-cal spray)",syns:0,note:"Free Food",free:true},
+  {name:"Cod (cooked without fat)",syns:0,note:"Free Food - white fish",free:true},
+  {name:"Haddock (cooked without fat)",syns:0,note:"Free Food - white fish",free:true},
+  {name:"Tuna (fresh or canned in brine/spring water)",syns:0,note:"Free Food",free:true},
+  {name:"Salmon (cooked without fat)",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Prawns (cooked without fat)",syns:0,note:"Free Food",free:true},
+  {name:"Rice (cooked without fat)",syns:0,note:"Free Food",free:true},
+  {name:"Pasta (cooked without fat)",syns:0,note:"Free Food - dried/cooked",free:true},
+  {name:"Noodles (plain, cooked without fat)",syns:0,note:"Free Food",free:true},
+  {name:"Couscous (cooked without fat)",syns:0,note:"Free Food",free:true},
+  {name:"Quinoa (cooked without fat)",syns:0,note:"Free Food",free:true},
+  {name:"Baked beans (canned in tomato sauce)",syns:0,note:"Free Food",free:true},
+  {name:"Chickpeas (boiled/canned)",syns:0,note:"Free Food",free:true},
+  {name:"Lentils (boiled/canned)",syns:0,note:"Free Food",free:true},
+  {name:"Kidney beans (boiled/canned)",syns:0,note:"Free Food",free:true},
+  {name:"Quark",syns:0,note:"Free Food - fat free soft cheese",free:true},
+  {name:"Fat free natural yogurt",syns:0,note:"Free Food",free:true},
+  {name:"Fat free natural fromage frais",syns:0,note:"Free Food",free:true},
+  {name:"Fat free cottage cheese",syns:0,note:"Free Food",free:true},
+  {name:"Tomato ketchup (no added sugar)",syns:0,note:"Free Food",free:true},
+  {name:"Soy sauce",syns:0,note:"Free Food",free:true},
+  {name:"Vinegar",syns:0,note:"Free Food",free:true},
+  {name:"Marmite",syns:0,note:"Free Food",free:true},
+  {name:"Worcestershire sauce",syns:0,note:"Free Food",free:true},
+  {name:"Mustard (Dijon/English/French/wholegrain) 1 tsp",syns:0,note:"Free Food",free:true},
+  {name:"Stock cubes",syns:0,note:"Free Food",free:true},
+  {name:"Tabasco sauce",syns:0,note:"Free Food",free:true},
+  {name:"Oyster sauce 1 tbsp",syns:0,note:"Free Food",free:true},
+  {name:"Bovril",syns:0,note:"Free Food",free:true},
+  {name:"Diet Coke / Slimline Tonic",syns:0,note:"Free Food",free:true},
+  {name:"Mineral water",syns:0,note:"Free Food",free:true},
+  {name:"Soda water",syns:0,note:"Free Food",free:true},
+  {name:"Artificial sweeteners",syns:0,note:"Free Food",free:true},
+
+  // Alcohol
+  {name:"Red wine, 125ml",syns:4.5,note:"per small glass"},
+  {name:"Red wine, 175ml",syns:6.0,note:"per medium glass"},
+  {name:"Red wine, 250ml",syns:8.5,note:"per large glass"},
+  {name:"White wine, dry, 125ml",syns:4.0,note:"per small glass"},
+  {name:"White wine, dry, 175ml",syns:6.0,note:"per medium glass"},
+  {name:"White wine, dry, 250ml",syns:8.0,note:"per large glass"},
+  {name:"White wine, medium, 125ml",syns:4.5,note:"per small glass"},
+  {name:"White wine, medium, 175ml",syns:6.5,note:"per medium glass"},
+  {name:"White wine, medium, 250ml",syns:9.0,note:"per large glass"},
+  {name:"White wine, sparkling, 125ml",syns:4.5,note:"per small glass"},
+  {name:"White wine, sparkling, 175ml",syns:6.5,note:"per medium glass"},
+  {name:"Rose wine, 125ml",syns:4.5,note:"per small glass"},
+  {name:"Rose wine, 175ml",syns:6.0,note:"per medium glass"},
+  {name:"Rose wine, 250ml",syns:9.0,note:"per large glass"},
+  {name:"Champagne, 100ml",syns:4.0,note:"per 100ml"},
+  {name:"Prosecco, bucks fizz, 100ml",syns:3.5,note:"per 100ml"},
+  {name:"Beer/lager standard, 250ml",syns:4.0,note:"per 250ml"},
+  {name:"Beer/lager premium, 250ml",syns:4.0,note:"per 250ml"},
+  {name:"Guinness draught, 440ml can",syns:6.5,note:"per can"},
+  {name:"Beck's, 275ml bottle",syns:5.0,note:"per bottle"},
+  {name:"Stella Artois, 284ml bottle",syns:5.0,note:"per bottle"},
+  {name:"Budweiser, 300ml bottle",syns:6.0,note:"per bottle"},
+  {name:"Carling, 300ml bottle",syns:5.0,note:"per bottle"},
+  {name:"San Miguel, 330ml can",syns:8.0,note:"per can"},
+  {name:"Vodka, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Gin, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Rum, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Whisky, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Brandy, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Bacardi, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Tequila, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Jack Daniels, 35ml",syns:4.5,note:"per single measure"},
+  {name:"Malibu, 35ml",syns:4.0,note:"per single measure"},
+  {name:"Southern Comfort, 35ml",syns:5.5,note:"per single measure"},
+  {name:"Baileys Irish Cream, 50ml",syns:5.5,note:"per measure"},
+  {name:"Amaretto, 50ml",syns:4.0,note:"per measure"},
+  {name:"Port, 50ml",syns:4.0,note:"per measure"},
+  {name:"Sherry, cream, 50ml",syns:4.0,note:"per measure"},
+  {name:"Sherry, dry, 50ml",syns:2.5,note:"per measure"},
+  {name:"Pimms, 35ml",syns:4.5,note:"per measure"},
+  {name:"Bacardi Breezer, 275ml",syns:5.0,note:"per bottle"},
+  {name:"Smirnoff Ice, 275ml",syns:9.0,note:"per bottle"},
+  {name:"WKD Blue, 275ml",syns:11.0,note:"per bottle"},
+  {name:"Mulled wine, homemade, 100ml",syns:10.0,note:"per 100ml"},
+  {name:"Cider, dry, 250ml",syns:4.5,note:"per 250ml"},
+  {name:"Cider, sweet, 250ml",syns:5.5,note:"per 250ml"},
+  {name:"Magners Original, 330ml bottle",syns:6.5,note:"per bottle"},
+  {name:"Bulmer's Traditional, 568ml bottle",syns:12.0,note:"per bottle"},
+
+  // Chocolate
+  // Moser Roth (Aldi)
+  {name:"Moser Roth milk chocolate, 1 portion (25g)",syns:5.0,note:"per 25g portion — bar divides into 5"},
+  {name:"Moser Roth dark chocolate, 1 portion (25g)",syns:4.5,note:"per 25g portion — bar divides into 5"},
+  {name:"Moser Roth hazelnut chocolate, 1 portion (25g)",syns:5.5,note:"per 25g portion — bar divides into 5"},
+  {name:"Moser Roth milk chocolate, full 125g bar",syns:25.0,note:"entire bar"},
+  {name:"Moser Roth dark chocolate, full 125g bar",syns:22.5,note:"entire bar"},
+  {name:"Moser Roth hazelnut chocolate, full 125g bar",syns:27.5,note:"entire bar"},
+
+  {name:"Kit Kat, 2 fingers",syns:5.5,note:"per 2-finger bar"},
+  {name:"Kit Kat, 4 fingers",syns:11.5,note:"per 4-finger bar"},
+  {name:"Kit Kat Chunky",syns:13.0,note:"per bar"},
+  {name:"Mars bar, standard",syns:13.0,note:"per bar"},
+  {name:"Snickers, standard bar",syns:15.0,note:"per bar"},
+  {name:"Bounty, twin bar",syns:13.5,note:"per twin bar"},
+  {name:"Cadbury Creme Egg",syns:9.0,note:"per egg"},
+  {name:"Cadbury Crunchie",syns:9.5,note:"per bar"},
+  {name:"Cadbury Curly Wurly",syns:6.0,note:"per bar"},
+  {name:"Cadbury Dairy Milk, treat size",syns:4.0,note:"per treat size bar"},
+  {name:"Cadbury Dairy Milk, small bar",syns:13.0,note:"per small bar"},
+  {name:"Cadbury Dairy Milk Caramel, treat size",syns:4.0,note:"per treat size"},
+  {name:"Cadbury Dairy Milk Caramel, small bar",syns:11.5,note:"per small bar"},
+  {name:"Cadbury Double Decker",syns:14.0,note:"per bar"},
+  {name:"Cadbury Flake, standard bar",syns:8.5,note:"per bar"},
+  {name:"Cadbury Fudge",syns:5.5,note:"per bar"},
+  {name:"Cadbury Picnic",syns:10.5,note:"per bar"},
+  {name:"Cadbury Twirl",syns:11.5,note:"per bar"},
+  {name:"Cadbury Wispa",syns:10.5,note:"per bar"},
+  {name:"Cadbury Buttons, mini bag",syns:4.0,note:"per mini bag"},
+  {name:"Cadbury Buttons, standard bag",syns:8.5,note:"per standard bag"},
+  {name:"Drifter bar",syns:7.5,note:"per bar"},
+  {name:"Galaxy, small bar",syns:8.5,note:"per small bar"},
+  {name:"Galaxy Caramel",syns:12.0,note:"per bar"},
+  {name:"Galaxy Minstrels, small bag",syns:10.5,note:"per small bag"},
+  {name:"Lion Bar",syns:14.0,note:"per bar"},
+  {name:"M&Ms, chocolate small bag",syns:11.5,note:"per small bag"},
+  {name:"M&Ms, peanut small bag",syns:11.5,note:"per small bag"},
+  {name:"Maltesers, small bag",syns:5.5,note:"per small bag"},
+  {name:"Maltesers, standard bag",syns:9.5,note:"per standard bag"},
+  {name:"Milky Way, single bar",syns:6.0,note:"per bar"},
+  {name:"Milky Way, twin bar",syns:11.5,note:"per twin bar"},
+  {name:"Milkybar, small bar",syns:3.5,note:"per small bar"},
+  {name:"Munchies, per tube",syns:13.0,note:"per tube"},
+  {name:"Revels",syns:8.5,note:"per bag"},
+  {name:"Rolos, standard tube",syns:12.5,note:"per tube"},
+  {name:"Smarties, standard tube",syns:9.0,note:"per tube"},
+  {name:"Aero, standard bar",syns:11.0,note:"per bar"},
+  {name:"After Eight, 2 mints",syns:2.0,note:"per 2 mints"},
+  {name:"Dip Dab",syns:4.5,note:"each"},
+  {name:"Polo Mints, sugar free, per tube",syns:4.0,note:"per tube"},
+  {name:"Polos, all varieties, per tube",syns:7.0,note:"per tube"},
+  {name:"Rowntrees Fruit Gums, standard tube",syns:8.0,note:"per tube"},
+  {name:"Rowntrees Fruit Pastilles, standard tube",syns:9.0,note:"per tube"},
+  {name:"Rowntrees Jelly Tots, small bag",syns:5.0,note:"per small bag"},
+  {name:"Skittles, small bag",syns:11.0,note:"per small bag"},
+  {name:"Starburst Fruity Chews, standard tube",syns:9.0,note:"per tube"},
+  {name:"Sherbet Fountain",syns:4.5,note:"each"},
+  {name:"Maynards Wine Gums, standard tube",syns:9.0,note:"per tube"},
+  {name:"Werther's Original, 2 sweets",syns:2.0,note:"per 2 sweets"},
+  {name:"Chocolate, after dinner mints",syns:2.0,note:"per 2 mints"},
+  {name:"Chocolate, standard, 25g",syns:5.5,note:"per 25g"},
+
+  // Sweets (non-branded per 25g)
+  {name:"Boiled sweets, 25g",syns:1.0,note:"per 25g"},
+  {name:"Foam sweets, 25g",syns:4.5,note:"per 25g"},
+  {name:"Fruit gums, 25g",syns:0.5,note:"per 25g"},
+  {name:"Fruit jellies, 25g",syns:1.0,note:"per 25g"},
+  {name:"Jelly babies, 2 mini sweets",syns:1.0,note:"per 2 sweets"},
+  {name:"Liquorice allsorts, 25g",syns:1.0,note:"per 25g"},
+  {name:"Marshmallows, 25g",syns:1.0,note:"per 25g"},
+  {name:"Mint imperials, 25g",syns:1.0,note:"per 25g"},
+  {name:"Nougat, 25g",syns:6.0,note:"per 25g"},
+  {name:"Pear drops, 25g",syns:1.0,note:"per 25g"},
+  {name:"Peppermint creams, 25g",syns:2.5,note:"per 25g"},
+  {name:"Percy pigs, 25g",syns:1.5,note:"per 25g"},
+  {name:"Toffee, 25g",syns:2.0,note:"per 25g"},
+  {name:"Turkish delight with nuts, 25g",syns:5.5,note:"per 25g"},
+  {name:"Wine gums, 25g",syns:1.0,note:"per 25g"},
+  {name:"Chewing gum, sugar free, 5 pellets",syns:0.5,note:"per 5 pellets"},
+  {name:"Sherbet, 25g",syns:4.5,note:"per 25g"},
+
+  // Biscuits
+  {name:"Bourbon creams",syns:3.5,note:"per biscuit"},
+  {name:"Chocolate digestives",syns:4.0,note:"per biscuit"},
+  {name:"Chocolate Hobnobs",syns:4.5,note:"per biscuit"},
+  {name:"Chocolate fingers",syns:1.5,note:"per biscuit"},
+  {name:"Custard creams",syns:3.0,note:"per biscuit"},
+  {name:"Digestives, standard",syns:3.5,note:"per biscuit"},
+  {name:"Digestives, chocolate",syns:4.0,note:"per biscuit"},
+  {name:"Garibaldi",syns:2.0,note:"per biscuit"},
+  {name:"Gingerbread man",syns:9.0,note:"each"},
+  {name:"Ginger nuts",syns:2.5,note:"per biscuit"},
+  {name:"Hobnobs, standard",syns:3.5,note:"per biscuit"},
+  {name:"Hobnobs, light",syns:3.0,note:"per biscuit"},
+  {name:"Jaffa cakes",syns:2.5,note:"per biscuit"},
+  {name:"Jammie Dodgers",syns:4.0,note:"per biscuit"},
+  {name:"Lemon puffs",syns:3.5,note:"per biscuit"},
+  {name:"Lincoln",syns:2.0,note:"per biscuit"},
+  {name:"Malted milk",syns:2.0,note:"per biscuit"},
+  {name:"Marie",syns:2.0,note:"per biscuit"},
+  {name:"Morning coffee",syns:1.0,note:"per biscuit"},
+  {name:"Nice",syns:2.0,note:"per biscuit"},
+  {name:"Nice creams",syns:3.5,note:"per biscuit"},
+  {name:"Oreo creme sandwich",syns:2.5,note:"per biscuit"},
+  {name:"Pink wafers",syns:2.0,note:"per biscuit"},
+  {name:"Rich tea",syns:2.0,note:"per biscuit"},
+  {name:"Rich tea fingers",syns:1.0,note:"per biscuit"},
+  {name:"Shortbread fingers",syns:5.0,note:"per biscuit"},
+  {name:"Crispbreads",syns:1.0,note:"each"},
+  {name:"Ryvita, cracked",syns:1.5,note:"each"},
+  {name:"Oatcakes, thin",syns:3.0,note:"each"},
+  {name:"Caramel wafer bar",syns:6.5,note:"per bar"},
+  {name:"Chocolate chip cookies",syns:3.0,note:"per biscuit"},
+  {name:"Flapjack, coconut, 25g",syns:6.0,note:"per 25g"},
+  {name:"Flapjack, fruit, small",syns:5.5,note:"each"},
+  {name:"Flapjack, fruit, medium",syns:11.5,note:"each"},
+  {name:"Flapjack, fruit, large",syns:16.5,note:"each"},
+
+  // Cakes
+  {name:"Almond finger",syns:9.5,note:"each"},
+  {name:"Angel cake, 25g",syns:5.0,note:"per 25g"},
+  {name:"Angel slice",syns:7.0,note:"each"},
+  {name:"American muffin, blueberry, mini",syns:5.5,note:"each"},
+  {name:"American muffin, blueberry, standard",syns:13.5,note:"each"},
+  {name:"American muffin, chocolate, mini",syns:6.0,note:"each"},
+  {name:"American muffin, chocolate, standard",syns:14.5,note:"each"},
+  {name:"Bakewell slice",syns:7.5,note:"each"},
+  {name:"Carrot cake, 25g",syns:5.0,note:"per 25g"},
+  {name:"Carrot cake slice, standard",syns:5.5,note:"each"},
+  {name:"Cherry cake, 25g",syns:4.5,note:"per 25g"},
+  {name:"Chocolate brownie, standard",syns:8.0,note:"each"},
+  {name:"Chocolate brownie bite",syns:2.5,note:"each"},
+  {name:"Chocolate cake, 25g",syns:5.0,note:"per 25g"},
+  {name:"Christmas cake individual",syns:8.0,note:"each"},
+  {name:"Coconut cake, 25g",syns:5.0,note:"per 25g"},
+  {name:"Coconut macaroon",syns:7.5,note:"each"},
+  {name:"Custard tart, 25g",syns:3.5,note:"per 25g"},
+  {name:"Custard tart, individual",syns:11.5,note:"each"},
+  {name:"Dundee cake, 25g",syns:4.5,note:"per 25g"},
+  {name:"Eccles cake, standard",syns:10.0,note:"each"},
+  {name:"Fairy cake, iced",syns:4.5,note:"each"},
+  {name:"Fondant fancy",syns:5.5,note:"each"},
+  {name:"Fruit cake, all varieties, 25g",syns:3.5,note:"per 25g"},
+  {name:"Ginger cake, 25g",syns:4.5,note:"per 25g"},
+  {name:"Jam tart, individual",syns:7.0,note:"each"},
+  {name:"Lemon drizzle cake, 25g",syns:4.5,note:"per 25g"},
+  {name:"Mince pie, individual",syns:11.0,note:"each"},
+  {name:"Sponge cake, with jam, 25g",syns:4.0,note:"per 25g"},
+  {name:"Victoria sandwich, 25g",syns:5.0,note:"per 25g"},
+  {name:"Walnut layer cake, 25g",syns:5.5,note:"per 25g"},
+  {name:"Cup cake, chocolate, standard",syns:10.0,note:"each"},
+  {name:"Cup cake, lemon, standard",syns:11.0,note:"each"},
+  {name:"Fresh cream eclair, small",syns:7.0,note:"each"},
+  {name:"Fresh cream eclair, large",syns:12.0,note:"each"},
+  {name:"Fresh cream meringue, small",syns:6.5,note:"each"},
+  {name:"Fresh cream meringue, large",syns:16.0,note:"each"},
+
+  // Cereals (25g)
+  {name:"All-Bran, 25g",syns:3.5,note:"per 25g"},
+  {name:"Bran flakes, 25g",syns:4.0,note:"per 25g"},
+  {name:"Cheerios, 25g",syns:4.5,note:"per 25g"},
+  {name:"Choco hoops, 25g",syns:5.0,note:"per 25g"},
+  {name:"Coco pops, 25g",syns:5.0,note:"per 25g"},
+  {name:"Corn flakes, 25g",syns:4.5,note:"per 25g"},
+  {name:"Crunchy nut corn flakes, 25g",syns:5.0,note:"per 25g"},
+  {name:"Frosties, 25g",syns:4.5,note:"per 25g"},
+  {name:"Fruit & fibre, 25g",syns:4.5,note:"per 25g"},
+  {name:"Granola, all varieties, 25g",syns:5.5,note:"per 25g"},
+  {name:"Honey shreddies, 25g",syns:4.5,note:"per 25g"},
+  {name:"Muesli, all varieties, 25g",syns:4.5,note:"per 25g"},
+  {name:"Oats so simple pots, 57g",syns:10.5,note:"per pot"},
+  {name:"Porridge oats, plain, per sachet",syns:5.0,note:"per sachet"},
+  {name:"Rice krispies, 25g",syns:5.0,note:"per 25g"},
+  {name:"Shredded wheat",syns:3.5,note:"each"},
+  {name:"Shreddies, 25g",syns:4.5,note:"per 25g"},
+  {name:"Sugar puffs, 25g",syns:4.5,note:"per 25g"},
+  {name:"Weetabix, 2 biscuits plain",syns:6.5,note:"per 2 biscuits"},
+  {name:"Weetabix minis, all varieties, 25g",syns:4.5,note:"per 25g"},
+  {name:"Hi-fi Light bar",syns:3.0,note:"per bar"},
+  {name:"Hi-fi bar, all varieties",syns:6.0,note:"per bar"},
+  {name:"Nut bar, small",syns:7.0,note:"per bar"},
+
+  // Crisps & snacks
+  {name:"Walkers Crisps, all varieties, 25g bag",syns:6.5,note:"per 25g bag"},
+  {name:"Walkers Baked, all varieties, 25g",syns:5.0,note:"per 25g bag"},
+  {name:"Walkers Lights, 17g bag",syns:6.0,note:"per bag"},
+  {name:"Walkers Quavers, 17g bag",syns:4.5,note:"per 17g bag"},
+  {name:"Walkers Quavers, 34g bag",syns:9.0,note:"per 34g bag"},
+  {name:"KP Hula Hoops, all varieties, 25g bag",syns:6.5,note:"per 25g bag"},
+  {name:"KP Nik Naks, 30g bag",syns:8.5,note:"per bag"},
+  {name:"Pringles, 25g",syns:6.5,note:"per 25g"},
+  {name:"Kettle Chips, 25g",syns:6.5,note:"per 25g"},
+  {name:"Poppadums, each",syns:2.5,note:"each"},
+  {name:"Tortilla chips, 25g",syns:6.0,note:"per 25g"},
+  {name:"Popcorn, butter, 25g",syns:5.5,note:"per 25g"},
+  {name:"Popcorn, plain salted, 25g",syns:6.5,note:"per 25g"},
+  {name:"Popcorn, sweet, 25g",syns:5.5,note:"per 25g"},
+  {name:"Pork scratchings, 25g",syns:8.0,note:"per 25g"},
+  {name:"Pretzels, 25g",syns:6.5,note:"per 25g"},
+  {name:"Twiglets, 25g",syns:5.0,note:"per 25g"},
+
+  // Bread
+  {name:"White bread, 1 medium slice",syns:4.5,note:"per slice"},
+  {name:"White bread, 1 thin slice",syns:3.0,note:"per thin slice"},
+  {name:"Wholemeal bread, 1 medium slice",syns:4.0,note:"per slice"},
+  {name:"Wholemeal bread, 1 thick slice",syns:5.0,note:"per thick slice"},
+  {name:"Brown bread, 1 medium slice",syns:2.5,note:"per slice"},
+  {name:"Granary bread, 1 medium slice",syns:4.5,note:"per slice"},
+  {name:"Pitta bread, mini",syns:4.0,note:"each"},
+  {name:"Pitta bread, standard",syns:7.5,note:"each"},
+  {name:"Naan bread, plain, mini",syns:8.0,note:"each"},
+  {name:"Naan bread, plain, large",syns:20.0,note:"each"},
+  {name:"Naan bread, garlic & coriander, large",syns:22.0,note:"each"},
+  {name:"Tortilla wrap, standard",syns:6.0,note:"each"},
+  {name:"Tortilla wrap, large",syns:9.0,note:"each"},
+  {name:"Chapati, made without fat",syns:5.5,note:"average each"},
+  {name:"Chapati, made with fat",syns:10.0,note:"average each"},
+  {name:"Garlic bread slice, standard",syns:4.5,note:"each"},
+  {name:"Garlic bread slice, reduced fat",syns:3.5,note:"each"},
+  {name:"Fried bread, 1 medium slice",syns:9.0,note:"per slice"},
+  {name:"Crumpets",syns:4.5,note:"each"},
+  {name:"Bagel",syns:11.5,note:"each"},
+  {name:"Hot cross bun, standard",syns:9.5,note:"each"},
+  {name:"Croissant, standard",syns:9.0,note:"each"},
+  {name:"Croissant, large",syns:14.0,note:"each"},
+  {name:"Danish pastry, standard",syns:15.5,note:"each"},
+  {name:"Scone, fruit, small",syns:7.0,note:"each"},
+  {name:"Scone, fruit, large",syns:14.5,note:"each"},
+  {name:"Teacake, fruited, standard",syns:9.5,note:"each"},
+  {name:"Brown roll, soft",syns:6.5,note:"each"},
+  {name:"White roll, plain",syns:7.5,note:"each"},
+
+  // Dairy
+  {name:"Butter, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Butter, 10g portion",syns:3.5,note:"per 10g"},
+  {name:"Butter, 1 level tbsp",syns:5.5,note:"per tbsp"},
+  {name:"Butter, lighter/reduced fat, 1 tsp",syns:1.5,note:"per tsp"},
+  {name:"Cheddar cheese, standard, 25g",syns:5.0,note:"per 25g"},
+  {name:"Cheddar cheese, light/reduced fat, 25g",syns:4.0,note:"per 25g"},
+  {name:"Feta cheese, standard, 25g",syns:3.5,note:"per 25g"},
+  {name:"Mozzarella, standard, 25g",syns:3.5,note:"per 25g"},
+  {name:"Parmesan, grated, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Stilton, 25g",syns:5.0,note:"per 25g"},
+  {name:"Brie, white, 25g",syns:3.5,note:"per 25g"},
+  {name:"Philadelphia, Original, 25g",syns:3.0,note:"per 25g"},
+  {name:"Philadelphia, Light, 25g",syns:2.0,note:"per 25g"},
+  {name:"Philadelphia, Extra Light, 25g",syns:1.5,note:"per 25g"},
+  {name:"Laughing Cow Original triangle",syns:2.0,note:"each"},
+  {name:"Laughing Cow Light triangle",syns:1.5,note:"each"},
+  {name:"Laughing Cow Extra Light triangle",syns:1.0,note:"each"},
+  {name:"Dairylea Slice, Original",syns:3.5,note:"each"},
+  {name:"Dairylea Slice, Light",syns:2.5,note:"each"},
+  {name:"Dairylea Triangle, Original",syns:2.0,note:"each"},
+  {name:"Dairylea Triangle, Light",syns:1.5,note:"each"},
+  {name:"Mini Babybel, Cheddar",syns:4.0,note:"each"},
+  {name:"Cream fraiche, standard, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Cream fraiche, luxury, 1 level tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Single cream, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Single cream, 100ml",syns:10.0,note:"per 100ml"},
+  {name:"Double cream, 1 level tbsp",syns:3.5,note:"per tbsp"},
+  {name:"Clotted cream, 1 level tbsp",syns:4.5,note:"per tbsp"},
+  {name:"Aerosol cream, 2 level tbsp",syns:0.5,note:"per 2 tbsp"},
+  {name:"Skimmed milk, 100ml",syns:1.0,note:"per 100ml"},
+  {name:"Semi-skimmed milk, 100ml",syns:1.5,note:"per 100ml"},
+  {name:"Whole milk, 100ml",syns:2.5,note:"per 100ml"},
+
+  // Condiments & sauces
+  {name:"Mayonnaise, standard, 1 tbsp",syns:5.0,note:"per tbsp"},
+  {name:"Mayonnaise, light/reduced fat, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Mayonnaise, extra light, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Tomato ketchup, standard, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Brown sauce, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Barbecue sauce, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Chilli sauce, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Hoisin sauce, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Pesto sauce, green, 1 tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Pesto sauce, red, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Tartare sauce, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Hollandaise sauce, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"French dressing, standard, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"French dressing, fat free, 1 tbsp",syns:0,note:"Free Food",free:true},
+  {name:"Caesar dressing, standard, 1 tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Caesar dressing, reduced fat, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Ranch dressing, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Salad cream, standard, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Salad cream, light, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Coleslaw, standard, 100g",syns:7.5,note:"per 100g"},
+  {name:"Coleslaw, light/reduced fat, 100g",syns:6.0,note:"per 100g"},
+  {name:"Honey, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Honey, 1 level tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Jam, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Jam, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Golden syrup, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Maple syrup, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Maple syrup, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Peanut butter, 1 level tbsp",syns:4.5,note:"per tbsp"},
+  {name:"Peanut butter, reduced fat, 1 tbsp",syns:4.0,note:"per tbsp"},
+  {name:"Chocolate spread/Nutella, 1 level tsp",syns:1.5,note:"per tsp"},
+  {name:"Chocolate spread/Nutella, 1 level tbsp",syns:4.0,note:"per tbsp"},
+
+  // Oils & fats
+  {name:"Oil, all types, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Oil, all types, 1 level tbsp",syns:6.0,note:"per tbsp"},
+  {name:"Dripping/lard, 1 level tsp",syns:2.0,note:"per tsp"},
+
+  // Meat & sausages
+  {name:"Beef sausages, standard, grilled, each",syns:4.0,note:"each"},
+  {name:"Beef sausages, premium, grilled, each",syns:3.0,note:"each"},
+  {name:"Cumberland sausages, standard, grilled, each",syns:4.5,note:"each"},
+  {name:"Pork sausages, grilled, each",syns:5.0,note:"each"},
+  {name:"Lincolnshire sausages, standard, grilled, each",syns:2.0,note:"each"},
+  {name:"Hot dog sausages, 1 standard",syns:1.5,note:"each"},
+  {name:"Chicken nuggets, baked, 100g",syns:7.5,note:"per 100g"},
+  {name:"Bacon rasher, grilled, lean only",syns:0,note:"Free Food - lean back bacon",free:true},
+  {name:"Bacon rasher, grilled, with fat, 1 rasher",syns:2.0,note:"per rasher"},
+  {name:"Scotch egg, large",syns:13.5,note:"each"},
+  {name:"Scotch egg, mini",syns:3.0,note:"each"},
+
+  // Puddings
+  {name:"Banoffee dessert, standard individual",syns:17.0,note:"per pot"},
+  {name:"Cheesecake, chocolate, individual",syns:18.0,note:"per pot"},
+  {name:"Cheesecake, lemon, individual",syns:11.0,note:"per pot"},
+  {name:"Chocolate sponge pudding, standard individual",syns:4.0,note:"per individual pot"},
+  {name:"Chocolate trifle, standard, 25g",syns:2.5,note:"per 25g"},
+  {name:"Creme brulee, per pot",syns:15.0,note:"per pot"},
+  {name:"Fruit crumble, all varieties, 25g",syns:3.0,note:"per 25g"},
+  {name:"Fruit crumble, individual",syns:16.0,note:"per individual"},
+  {name:"Lemon meringue pie, 25g",syns:3.5,note:"per 25g"},
+  {name:"Rice pudding, canned, standard, 100g",syns:5.0,note:"per 100g"},
+  {name:"Tiramisu, standard, 25g",syns:3.0,note:"per 25g"},
+  {name:"Tiramisu, individual, per pot",syns:12.0,note:"per pot"},
+  {name:"Trifle, 25g",syns:2.0,note:"per 25g"},
+  {name:"Trifle, individual, per pot",syns:9.5,note:"per pot"},
+  {name:"Yorkshire pudding, small",syns:2.5,note:"each"},
+  {name:"Yorkshire pudding, large",syns:5.5,note:"each"},
+
+  // Ice cream
+  {name:"Ice cream, luxury, 25g",syns:3.0,note:"per 25g"},
+  {name:"Ice cream, luxury, 60g scoop",syns:7.0,note:"per scoop"},
+  {name:"Ice cream, standard, 25g",syns:2.0,note:"per 25g"},
+  {name:"Ice cream, reduced fat, 25g",syns:1.5,note:"per 25g"},
+  {name:"Cone with ice cream",syns:9.0,note:"each"},
+  {name:"Cornetto, individual",syns:11.0,note:"each"},
+  {name:"Fruit juice ice lolly",syns:2.5,note:"each"},
+  {name:"Walls Calippo Shots",syns:4.5,note:"each"},
+  {name:"Walls Magnum Mini, all varieties",syns:9.0,note:"each"},
+  {name:"Walls Solero",syns:5.0,note:"each"},
+  {name:"Cadbury Crunchie Blast Ice Cream",syns:11.5,note:"each"},
+  {name:"Ben & Jerry's ice cream, 100g",syns:13.5,note:"per 100g"},
+  {name:"Maltesers Ice Cream Bar",syns:4.5,note:"each"},
+
+  // Pizzas
+  {name:"Margherita pizza, 100g",syns:12.5,note:"per 100g"},
+  {name:"Pepperoni pizza, 100g",syns:13.5,note:"per 100g"},
+  {name:"Ham & mushroom pizza, 100g",syns:11.5,note:"per 100g"},
+  {name:"Cheese pizza, 100g",syns:14.0,note:"per 100g"},
+  {name:"Vegetable pizza, 100g",syns:10.5,note:"per 100g"},
+  {name:"Garlic bread pizza, 100g",syns:18.0,note:"per 100g"},
+
+  // Takeaway / restaurant
+  {name:"Chips, standard portion, fish & chip shop",syns:17.5,note:"standard portion"},
+  {name:"Chips, large portion, fish & chip shop",syns:27.0,note:"large portion"},
+  {name:"Cod in batter, small, fish & chip shop",syns:15.0,note:"small"},
+  {name:"Cod in batter, medium, fish & chip shop",syns:19.0,note:"medium"},
+  {name:"Haddock in batter, small",syns:9.0,note:"small"},
+  {name:"Haddock in batter, medium",syns:13.0,note:"medium"},
+  {name:"Curry sauce, fish & chip shop, per serving",syns:6.0,note:"per serving"},
+  {name:"Fish cake, fish & chip shop",syns:7.5,note:"each"},
+  {name:"Mushy peas, fish & chip shop",syns:0,note:"Free Food",free:true},
+  {name:"Saveloy, fish & chip shop",syns:6.5,note:"each"},
+  {name:"Plaice in batter, medium",syns:17.5,note:"medium"},
+  {name:"Chicken tikka masala, Indian, per serving",syns:14.5,note:"per serving"},
+  {name:"Chicken curry, Indian, per serving",syns:11.5,note:"per serving"},
+  {name:"Chicken Biryani, Indian, per serving",syns:12.5,note:"per serving"},
+  {name:"Chicken bhuna, Indian, per serving",syns:11.0,note:"per serving"},
+  {name:"Chicken korma, Indian, per serving",syns:16.5,note:"per serving"},
+  {name:"Chicken tikka, Indian, per serving",syns:11.5,note:"per serving"},
+  {name:"Lamb rogan josh & rice, per serving",syns:14.5,note:"per serving"},
+  {name:"Beef Madras, Indian, per serving",syns:11.0,note:"per serving"},
+  {name:"Chicken Jalfrezi, Indian, per serving",syns:8.5,note:"per serving"},
+  {name:"Chicken Kashmiri, Indian, per serving",syns:9.5,note:"per serving"},
+  {name:"Chicken Makhani, Indian, per serving",syns:16.5,note:"per serving"},
+  {name:"Chicken Saag, Indian, per serving",syns:11.0,note:"per serving"},
+  {name:"Chicken Tandoori, Indian, per serving",syns:9.0,note:"per serving"},
+  {name:"Chicken Vindaloo, Indian, per serving",syns:8.0,note:"per serving"},
+  {name:"Chickpea Dhal, Indian, per serving",syns:5.0,note:"per serving"},
+  {name:"Naan bread, plain, mini",syns:8.0,note:"each"},
+  {name:"Naan bread, plain, large",syns:20.0,note:"each"},
+  {name:"Poppadums, each",syns:4.0,note:"each"},
+  {name:"Onion bhaji, standard",syns:5.5,note:"each"},
+  {name:"Prawn crackers, 5 crackers",syns:1.5,note:"per 5 crackers"},
+  {name:"Vegetable samosas, mini, each",syns:2.5,note:"each"},
+  {name:"Vegetable curry, Indian, per serving",syns:9.0,note:"per serving"},
+
+  // Sandwiches (twin pack)
+  {name:"BLT sandwich, twin pack",syns:25.0,note:"per twin pack"},
+  {name:"Cheese & onion sandwich, twin pack",syns:25.0,note:"per twin pack"},
+  {name:"Chicken salad sandwich, twin pack",syns:19.0,note:"per twin pack"},
+  {name:"Egg mayonnaise sandwich, twin pack",syns:18.0,note:"per twin pack"},
+  {name:"Ham salad sandwich, twin pack",syns:17.0,note:"per twin pack"},
+  {name:"Prawn mayonnaise sandwich, twin pack",syns:17.5,note:"per twin pack"},
+  {name:"Tuna & cucumber sandwich, twin pack",syns:18.5,note:"per twin pack"},
+
+  // Soups
+  {name:"Soup, cup, standard, per sachet",syns:5.5,note:"per sachet"},
+  {name:"Soup, cup, slim, per sachet",syns:3.0,note:"per sachet"},
+  {name:"Cream of chicken soup, canned, undiluted, 100g",syns:5.0,note:"per 100g"},
+  {name:"Cream of tomato soup, canned, 100g",syns:3.0,note:"per 100g"},
+  {name:"Vegetable soup, canned, 100g",syns:2.0,note:"per 100g"},
+  {name:"Minestrone soup, canned, 100g",syns:2.0,note:"per 100g"},
+
+  // Cold drinks
+  {name:"Coca-Cola, 330ml can",syns:7.0,note:"per can"},
+  {name:"Coca-Cola, 500ml bottle",syns:10.5,note:"per bottle"},
+  {name:"Pepsi Cola, 250ml bottle",syns:5.5,note:"per 250ml"},
+  {name:"Fanta Orange, 330ml can",syns:4.0,note:"per can"},
+  {name:"Energy drink, regular, 330ml",syns:6.0,note:"per can"},
+  {name:"Ginger beer, 250ml",syns:5.0,note:"per 250ml"},
+  {name:"Lemonade, 250ml",syns:5.0,note:"per 250ml"},
+  {name:"Cola, 250ml",syns:5.0,note:"per 250ml"},
+  {name:"Tonic water, 250ml",syns:3.0,note:"per 250ml"},
+  {name:"Shandy, regular, 250ml",syns:3.0,note:"per 250ml"},
+  {name:"Fruit juice, apple, unsweetened, 100ml",syns:1.0,note:"per 100ml"},
+  {name:"Fruit juice, orange, freshly squeezed, 100ml",syns:2.0,note:"per 100ml"},
+  {name:"Instant cappuccino, 18g sachet",syns:3.5,note:"per sachet"},
+  {name:"Instant latte coffee, 18g sachet",syns:3.5,note:"per sachet"},
+  {name:"Horlicks, 4 tsp made up with 200ml skimmed milk",syns:8.0,note:"per serving"},
+
+  // Kitchen basics
+  {name:"Flour, 25g white",syns:4.0,note:"per 25g"},
+  {name:"Flour, 25g wholemeal",syns:4.0,note:"per 25g"},
+  {name:"Sugar, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Sugar, 1 level tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Sugar, 25g",syns:5.0,note:"per 25g"},
+  {name:"Cocoa powder, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Cocoa powder, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Breadcrumbs, dried, 25g",syns:4.5,note:"per 25g"},
+  {name:"Baking powder, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Cornflour, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Cornflour, 1 level tbsp",syns:3.5,note:"per tbsp"},
+  {name:"Arrowroot, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Custard powder, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Gelatine",syns:0,note:"Free Food",free:true},
+  {name:"Artificial sweeteners, all brands",syns:0,note:"Free Food",free:true},
+  {name:"Food colouring/flavouring essence",syns:0,note:"Free Food",free:true},
+  {name:"Black treacle, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Marzipan, 25g",syns:2.5,note:"per 25g"},
+  {name:"Icing, butter, 25g",syns:8.5,note:"per 25g"},
+  {name:"Icing, glace, 25g",syns:4.5,note:"per 25g"},
+  {name:"Icing, royal, 25g",syns:4.5,note:"per 25g"},
+  {name:"Candied peel, 25g",syns:3.5,note:"per 25g"},
+  {name:"Desiccated coconut, 1 level tbsp",syns:4.5,note:"per tbsp"},
+  {name:"Coconut, flesh, 25g",syns:4.5,note:"per 25g"},
+  {name:"Coconut milk, canned, standard, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Coconut milk, reduced fat, 1 level tbsp",syns:0.5,note:"per tbsp"},
+  {name:"Fructose, fruit sugar, 25g",syns:5.0,note:"per 25g"},
+  {name:"Golden syrup, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Molasses, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Malt extract, 1 level tsp",syns:2.5,note:"per tsp"},
+  {name:"Cake mix, batter mix, 25g dry",syns:4.5,note:"per 25g"},
+  {name:"Stuffing mix, packet, 25g dry",syns:4.5,note:"per 25g dry"},
+  {name:"Stuffing mix, 25g made up",syns:2.0,note:"per 25g made up"},
+  {name:"Pancake mix, 25g dried",syns:4.0,note:"per 25g"},
+  {name:"Pizza base mix, dried, 145g sachet",syns:24.5,note:"per sachet"},
+
+  // MORE FREE FOODS — Vegetables (comprehensive)
+  {name:"Acorn squash, raw/cooked without fat",syns:0,note:"Free Food - Superfree vegetable",free:true},
+  {name:"Alfalfa sprouts",syns:0,note:"Free Food - Superfree vegetable",free:true},
+  {name:"Artichokes, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Asparagus, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Aubergine, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Baby sweetcorn, raw/cooked",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Bamboo shoots",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Bean sprouts, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Beetroot, boiled/pickled",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Broccoli, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Brussels sprouts, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Butternut squash, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Cabbage, all types, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Capers, in brine/vinegar, drained",syns:0,note:"Free Food",free:true},
+  {name:"Carrots, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Cauliflower, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Celeriac, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Celery, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Chard, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Chicory",syns:0,note:"Free Food",free:true},
+  {name:"Chillies",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Chinese leaves (amaranth), raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Courgettes, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Cucumber, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Curly kale, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Endive",syns:0,note:"Free Food",free:true},
+  {name:"Fennel, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"French beans, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Garlic, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Gherkins, pickled",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Green beans, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Karela (bitter melon)",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Kohlrabi, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Leeks, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Lettuce, all varieties",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Mangetout, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Marrow, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Mushrooms, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Mustard & cress",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Okra, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Onions, all varieties, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Pak choi, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Peppers/pimentos, all varieties, without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Pumpkin, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Radicchio",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Radishes",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Rocket, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Runner beans, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Salsify, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Sauerkraut, bottled/canned, drained",syns:0,note:"Free Food",free:true},
+  {name:"Seaweed, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Shallots, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Spinach, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Spaghetti squash, raw/cooked",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Spring greens, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Spring onions",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Sugar snap peas",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Swede, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Tomatoes, all types, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Passata",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Tomato puree",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Turnip, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Watercress",syns:0,note:"Free Food - Superfree",free:true},
+
+  // FREE FOODS — Fruit (comprehensive)
+  {name:"Apples, all varieties, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Apricots, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Bananas, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Blackberries, fresh/frozen",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Blackcurrants, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Blueberries, fresh/frozen",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Cherries, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Clementines, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Damsons, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Dragon fruit, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Elderberries, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Feijoa, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Figs, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Grapefruit, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Grapes, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Greengages, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Guava, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Kiwi fruit, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Kumquats, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Lemons, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Limes, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Loganberries, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Lychees, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Mammie apple, fresh",syns:0,note:"Free Food",free:true},
+  {name:"Mandarins, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Mango, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Mangosteen, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Melon, all varieties, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Mulberries, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Nectarines, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Oranges, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Papaya (paw paw), fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Passion fruit, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Peaches, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Pears, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Pineapple, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Plums, all varieties, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Pomegranate, fresh",syns:0,note:"Free Food - fruit",free:true},
+  {name:"Raspberries, fresh/frozen",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Redcurrants, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Rhubarb, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Satsumas, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Star fruit (carambola), fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Strawberries, fresh/frozen",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Tangerines, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Ugli fruit, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Watermelon, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+  {name:"Whitecurrants, fresh",syns:0,note:"Free Food - Superfree fruit",free:true},
+
+  // FREE FOODS — Meat & poultry (comprehensive)
+  {name:"Beef, extra lean mince (less than 5% fat), raw",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Beef, all lean cuts, raw",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Beef, roasted without fat",syns:0,note:"Free Food",free:true},
+  {name:"Chicken, all cuts, lean, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Chicken breast, grilled/baked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Turkey, all cuts, lean, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Turkey mince, extra lean, raw",syns:0,note:"Free Food",free:true},
+  {name:"Pork, all lean cuts, raw",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Pork, roasted without fat",syns:0,note:"Free Food",free:true},
+  {name:"Lamb, extra lean cuts, raw",syns:0,note:"Free Food - lean meat",free:true},
+  {name:"Lamb, roasted without fat",syns:0,note:"Free Food",free:true},
+  {name:"Veal, escalope, raw",syns:0,note:"Free Food",free:true},
+  {name:"Venison, cooked without fat",syns:0,note:"Free Food - Superfree meat",free:true},
+  {name:"Duck, meat only, no skin",syns:0,note:"Free Food",free:true},
+  {name:"Rabbit/hare, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Kidney, cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Liver, all types, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Oxtail, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Tripe, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Pastrami",syns:0,note:"Free Food",free:true},
+
+  // FREE FOODS — Fish & seafood (comprehensive)
+  {name:"Bream, cooked without fat",syns:0,note:"Free Food - white fish",free:true},
+  {name:"Catfish, cooked without fat",syns:0,note:"Free Food - white fish",free:true},
+  {name:"Coley, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Dab, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Dover sole, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Flounder, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Flying fish, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Haddock, plain/smoked, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Hake, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Halibut, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Herring, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Hoki, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"John Dory, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Kippers, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Lemon sole, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Mackerel, not smoked, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Monkfish, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Mullet, cooked without fat",syns:0,note:"Free Food - white fish",free:true},
+  {name:"Parrot fish, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Pilchards, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Plaice, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Pollack, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Red snapper, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Rollmop herring",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Sea bass, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Sardines, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Sardines, canned in brine",syns:0,note:"Free Food",free:true},
+  {name:"Sprats, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Tilapia, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Trout, plain or smoked, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+  {name:"Turbot, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Whiting, cooked without fat",syns:0,note:"Free Food - Superfree white fish",free:true},
+  {name:"Clams, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Cockles, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Crab, fresh, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Crayfish, cooked",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Cuttlefish, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Lobster, meat only, boiled",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Mussels, boiled/steamed without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Octopus, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Oysters, steamed",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Scallops, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Shrimps, cooked without fat",syns:0,note:"Free Food - shellfish",free:true},
+  {name:"Squid, cooked without fat",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Whelks, without shells, boiled",syns:0,note:"Free Food",free:true},
+  {name:"Winkles, without shells, boiled",syns:0,note:"Free Food - Superfree shellfish",free:true},
+  {name:"Tuna, canned in brine/spring water, drained",syns:0,note:"Free Food",free:true},
+  {name:"Smoked salmon",syns:0,note:"Free Food",free:true},
+  {name:"Smoked haddock, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Smoked mackerel, cooked without fat",syns:0,note:"Free Food - oily fish",free:true},
+
+  // FREE FOODS — Pulses & beans (comprehensive)
+  {name:"Aduki beans, boiled/canned",syns:0,note:"Free Food",free:true},
+  {name:"Baked beans, canned in reduced sugar sauce",syns:0,note:"Free Food",free:true},
+  {name:"Black beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Black eye beans, boiled/canned",syns:0,note:"Free Food",free:true},
+  {name:"Black gram beans, boiled",syns:0,note:"Free Food",free:true},
+  {name:"Borlotti beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Broad beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Butter beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Cannellini beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Edamame beans, boiled",syns:0,note:"Free Food",free:true},
+  {name:"Flageolet beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Haricot beans, boiled/canned",syns:0,note:"Free Food",free:true},
+  {name:"Mixed beans, canned in brine",syns:0,note:"Free Food",free:true},
+  {name:"Mung beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Pigeon peas, boiled/canned",syns:0,note:"Free Food",free:true},
+  {name:"Pinto beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Red kidney beans, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Soya beans, boiled/canned",syns:0,note:"Free Food",free:true},
+  {name:"Split peas, boiled",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Chickpeas, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Green lentils, boiled/canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Red lentils, boiled",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Puy lentils, boiled",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Dried peas, garden/fresh",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Marrowfat peas, canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Mushy peas, canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Petits pois, canned/frozen",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Garden peas, canned",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Frozen peas",syns:0,note:"Free Food - Superfree",free:true},
+
+  // FREE FOODS — Grains & starchy foods
+  {name:"Buckwheat, cooked without fat",syns:0,note:"Free Food - grain",free:true},
+  {name:"Bulgar wheat, cooked without fat",syns:0,note:"Free Food - grain",free:true},
+  {name:"Millet, cooked without fat",syns:0,note:"Free Food - grain",free:true},
+  {name:"Pearl barley, cooked",syns:0,note:"Free Food",free:true},
+  {name:"Potatoes, all varieties, flesh only, raw/cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Baked potato, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Boiled potatoes",syns:0,note:"Free Food",free:true},
+  {name:"Mashed potato, made with water",syns:0,note:"Free Food",free:true},
+  {name:"Sweet potatoes, raw/cooked without fat",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Yams, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Plantain, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Cassava, cooked without fat",syns:0,note:"Free Food",free:true},
+  {name:"Corn on the cob",syns:0,note:"Free Food",free:true},
+
+  // FREE FOODS — Dairy
+  {name:"Skimmed milk, any amount",syns:0,note:"Free Food (counts as HE A if measured)",free:true},
+  {name:"Quark, skimmed milk soft cheese",syns:0,note:"Free Food",free:true},
+  {name:"Fat free natural yogurt, plain",syns:0,note:"Free Food",free:true},
+  {name:"Fat free Greek yogurt, plain",syns:0,note:"Free Food",free:true},
+  {name:"Fat free fromage frais, natural",syns:0,note:"Free Food",free:true},
+  {name:"Cottage cheese, fat free/low fat, natural",syns:0,note:"Free Food",free:true},
+
+  // FREE FOODS — Condiments & sauces
+  {name:"Soy sauce, all varieties",syns:0,note:"Free Food",free:true},
+  {name:"Fish sauce (nam pla)",syns:0,note:"Free Food",free:true},
+  {name:"Oyster sauce, 1 tbsp",syns:0,note:"Free Food",free:true},
+  {name:"Vinegar, all varieties",syns:0,note:"Free Food",free:true},
+  {name:"Balsamic vinegar",syns:0,note:"Free Food - Superfree",free:true},
+  {name:"Worcestershire sauce",syns:0,note:"Free Food",free:true},
+  {name:"Tabasco sauce",syns:0,note:"Free Food",free:true},
+  {name:"Marmite",syns:0,note:"Free Food",free:true},
+  {name:"Bovril",syns:0,note:"Free Food",free:true},
+  {name:"Mint sauce, no added sugar",syns:0,note:"Free Food",free:true},
+  {name:"Mustard powder",syns:0,note:"Free Food",free:true},
+  {name:"Horseradish sauce, creamed",syns:1.5,note:"per 1 level tbsp"},
+  {name:"Redcurrant jelly, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Cranberry sauce, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Piccalilli, 1 level tbsp",syns:0.5,note:"per tbsp"},
+  {name:"Relish, all varieties, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Sweet pickle, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Plum sauce, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Sweet chilli sauce, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Teriyaki sauce, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Thousand island dressing, standard, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Thousand island dressing, reduced calorie, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Tomato ketchup, reduced sugar & salt, 1 tbsp",syns:0.5,note:"per tbsp"},
+  {name:"Curry paste, balti, 1 level tsp",syns:1.5,note:"per tsp"},
+  {name:"Curry paste, korma, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Curry paste, madras, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Curry paste, rogan josh, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Curry paste, tandoori, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Curry paste, thai red, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Curry paste, tikka masala, 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Garlic puree, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Harissa paste, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Tamarind paste, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Tahini paste, 1 level tbsp",syns:4.5,note:"per tbsp"},
+  {name:"Nam pla (fish sauce)",syns:0,note:"Free Food",free:true},
+  {name:"Wasabi paste, 1 level tsp",syns:2.5,note:"per tsp"},
+  {name:"Peri-peri marinade, 1 level tbsp",syns:1.0,note:"per tbsp"},
+
+  // MORE SYNS — Savoury pastries
+  {name:"Beef wellington, each",syns:31.5,note:"each"},
+  {name:"Cheese & broccoli quiche, 100g",syns:11.5,note:"per 100g"},
+  {name:"Cheese & onion pasty, each",syns:20.5,note:"each"},
+  {name:"Cheese & onion quiche, 100g",syns:13.0,note:"per 100g"},
+  {name:"Cheese & onion rolls, mini, each",syns:2.5,note:"each"},
+  {name:"Cheese & onion rolls, standard, each",syns:10.5,note:"each"},
+  {name:"Chicken & leek pie, individual",syns:34.5,note:"each"},
+  {name:"Chicken & mushroom pie, individual",syns:23.5,note:"each"},
+  {name:"Sausage roll, snack size, each",syns:6.0,note:"each"},
+  {name:"Sausage roll, standard, each",syns:10.5,note:"each"},
+  {name:"Sausage roll, large, each",syns:17.5,note:"each"},
+  {name:"Steak & ale pie, individual",syns:29.0,note:"each"},
+  {name:"Steak & kidney pie, individual",syns:19.5,note:"each"},
+  {name:"Vegetable pasty, each",syns:20.5,note:"each"},
+  {name:"Vegetable quiche, 100g",syns:11.0,note:"per 100g"},
+  {name:"Vegetable spring rolls, mini, each",syns:2.0,note:"each"},
+  {name:"Vegetable spring rolls, standard, each",syns:6.5,note:"each"},
+  {name:"Vegetable samosas, standard, each",syns:6.5,note:"each"},
+  {name:"Prawn spring roll, each",syns:3.5,note:"each"},
+
+  // MORE SYNS — Nuts & seeds
+  {name:"Almonds, shelled, 25g",syns:8.0,note:"per 25g"},
+  {name:"Brazil nuts, shelled, 25g",syns:8.0,note:"per 25g"},
+  {name:"Cashew nuts, roasted/salted, 25g",syns:7.5,note:"per 25g"},
+  {name:"Chestnuts, shelled & whole, 25g",syns:2.0,note:"per 25g"},
+  {name:"Hazelnuts, roasted/salted, shelled, 25g",syns:8.5,note:"per 25g"},
+  {name:"Macadamia nuts, salted, 25g",syns:9.5,note:"per 25g"},
+  {name:"Peanuts, chilli spiced, 25g",syns:7.5,note:"per 25g"},
+  {name:"Peanuts, dry roasted, 25g",syns:7.5,note:"per 25g"},
+  {name:"Peanuts, roasted/salted, 25g",syns:7.5,note:"per 25g"},
+  {name:"Pecan nuts, 25g",syns:9.0,note:"per 25g"},
+  {name:"Pine nuts, 25g",syns:9.0,note:"per 25g"},
+  {name:"Pistachio nuts, roasted/salted, shelled, 25g",syns:7.5,note:"per 25g"},
+  {name:"Tiger nuts, 25g",syns:5.0,note:"per 25g"},
+  {name:"Walnuts, shelled, 25g",syns:8.5,note:"per 25g"},
+  {name:"Mixed nuts & fruits, 25g",syns:6.5,note:"per 25g"},
+  {name:"Mixed nuts & raisins, 25g",syns:6.0,note:"per 25g"},
+  {name:"Seeds, hemp, shelled, 25g",syns:7.5,note:"per 25g"},
+  {name:"Seeds, linseed, 25g",syns:6.5,note:"per 25g"},
+  {name:"Seeds, mixed, 25g",syns:7.0,note:"per 25g"},
+  {name:"Seeds, pumpkin, 25g",syns:7.5,note:"per 25g"},
+  {name:"Seeds, sesame, 25g",syns:7.5,note:"per 25g"},
+  {name:"Seeds, sunflower, 25g",syns:7.5,note:"per 25g"},
+  {name:"Seeds, poppy, 25g",syns:6.0,note:"per 25g"},
+
+  // MORE SYNS — Dips
+  {name:"Cheese & chive dip, standard, 1 tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Cheese & chive dip, reduced fat, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Dipping sauce, all varieties, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Garlic & herb dip, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Guacamole dip, standard, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Guacamole dip, reduced fat, 1 tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Houmous dip, caramelised onion, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Houmous dip, standard, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Nacho cheese dip, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Onion & garlic dip, standard, 1 tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Raita dip, 1 tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Salsa dip, 1 tbsp",syns:0.5,note:"per tbsp"},
+  {name:"Sour cream & chive dip, standard, 1 tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Sweet chilli dip, 1 tbsp",syns:4.0,note:"per tbsp"},
+  {name:"Taramasalata, 1 tbsp",syns:4.0,note:"per tbsp"},
+  {name:"Tzatziki dip, 1 tbsp",syns:1.0,note:"per tbsp"},
+
+  // MORE SYNS — Avocado, olives, other extras
+  {name:"Avocado, fresh, each",syns:9.5,note:"average each"},
+  {name:"Avocado, fresh, pureed, 100g",syns:9.5,note:"per 100g"},
+  {name:"Olives, black/green, 8 olives",syns:1.0,note:"per 8 olives"},
+  {name:"Olives, stuffed, 4 olives",syns:1.0,note:"per 4 olives"},
+
+  // MORE SYNS — Dairy extras
+  {name:"Aerosol cream, 3 level tbsp",syns:0.5,note:"per 3 tbsp"},
+  {name:"Butter, 25g",syns:9.0,note:"per 25g"},
+  {name:"Ghee (clarified butter), 1 level tsp",syns:2.0,note:"per tsp"},
+  {name:"Ghee (clarified butter), 1 level tbsp",syns:6.5,note:"per tbsp"},
+  {name:"Margarine/spread, standard, 1 level tsp",syns:1.5,note:"per tsp"},
+  {name:"Margarine/spread, standard, 1 level tbsp",syns:4.5,note:"per tbsp"},
+  {name:"Margarine/spread, low fat, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Margarine/spread, low fat, 1 level tbsp",syns:3.0,note:"per tbsp"},
+  {name:"Margarine/spread, very low fat, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Soured cream, standard, 1 level tbsp",syns:1.5,note:"per tbsp"},
+  {name:"Buttermilk, 100ml",syns:3.5,note:"per 100ml"},
+  {name:"Condensed milk, full fat, 1 level tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Evaporated milk, full fat, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Whipping cream, 100ml",syns:18.5,note:"per 100ml"},
+  {name:"Creme fraiche, dairy free, 100g",syns:4.0,note:"per 100g"},
+  {name:"Goats milk, whole, 100ml",syns:3.0,note:"per 100ml"},
+  {name:"Soya milk, unsweetened, 100ml",syns:1.5,note:"per 100ml"},
+  {name:"Oat milk, 100ml",syns:2.5,note:"per 100ml"},
+  {name:"Almond milk, unsweetened, 100ml",syns:0.5,note:"per 100ml"},
+  {name:"Coconut milk drink, 100ml",syns:1.0,note:"per 100ml"},
+
+  // MORE SYNS — Breakfast items
+  {name:"Granola, luxury, 45g",syns:10.5,note:"per 45g serving"},
+  {name:"Muesli, luxury, 45g",syns:9.0,note:"per 45g serving"},
+  {name:"Porridge, made with whole milk, 100ml",syns:6.0,note:"per 100ml milk"},
+  {name:"Porridge, made with semi-skimmed milk, 100ml",syns:5.0,note:"per 100ml milk"},
+
+  // MORE SYNS — Hot drinks
+  {name:"Drinking chocolate, 3 heaped tsp made up with 200ml skimmed milk",syns:4.0,note:"per serving"},
+  {name:"Drinking chocolate, instant, 4 heaped tsp with 200ml water",syns:5.5,note:"per serving"},
+  {name:"Ovaltine, 4 tsp made up with 200ml skimmed milk",syns:4.0,note:"per serving"},
+  {name:"Ovaltine, instant light, 4 tsp with 200ml water",syns:8.0,note:"per serving"},
+  {name:"Cocoa, 4 tsp made up with 200ml skimmed milk",syns:4.0,note:"per serving"},
+  {name:"Instant mocha coffee, 18g sachet",syns:3.5,note:"per sachet"},
+
+  // MORE SYNS — Yogurt & dessert
+  {name:"Greek style yogurt, full fat, natural, 100g",syns:4.0,note:"per 100g"},
+  {name:"Greek style yogurt, full fat, with honey, 100g",syns:5.5,note:"per 100g"},
+  {name:"Whole milk yogurt, fruit/flavoured, 100g",syns:4.0,note:"per 100g"},
+  {name:"Low fat yogurt, fruit/flavoured, 100g",syns:3.0,note:"per 100g"},
+  {name:"Low fat yogurt, drinking, 100ml bottle",syns:3.5,note:"per 100ml"},
+  {name:"Soya/dairy free yogurt, fruit/flavoured, 100g",syns:4.5,note:"per 100g"},
+  {name:"Fromage frais, flavoured, 100g",syns:4.0,note:"per 100g"},
+  {name:"Creme caramel, individual",syns:6.0,note:"each"},
+  {name:"Panna cotta, berry, individual",syns:18.5,note:"each"},
+  {name:"Profiteroles with sauce, each",syns:3.0,note:"each"},
+  {name:"Meringue nest, standard, each",syns:3.0,note:"each"},
+
+  // MORE SYNS — Ready meals extras
+  {name:"Chicken chow mein, standard, 100g",syns:3.0,note:"per 100g"},
+  {name:"Chicken fried rice, 100g",syns:4.0,note:"per 100g"},
+  {name:"Beef burger, standard, grilled, each",syns:3.5,note:"each"},
+  {name:"Beef burger, Aberdeen Angus luxury, grilled, each",syns:6.0,note:"each"},
+  {name:"Lamb grillsteak with mint, grilled, each",syns:4.0,note:"each"},
+  {name:"Prawn toast, each",syns:4.5,note:"each"},
+
+  // MORE SYNS — Fast food (branded approximate)
+  {name:"McDonald's Big Mac",syns:22.0,note:"approximate per burger"},
+  {name:"McDonald's Quarter Pounder with Cheese",syns:23.0,note:"approximate per burger"},
+  {name:"McDonald's McChicken Sandwich",syns:18.0,note:"approximate"},
+  {name:"McDonald's Fillet-o-Fish",syns:16.0,note:"approximate"},
+  {name:"McDonald's Egg McMuffin",syns:13.5,note:"approximate"},
+  {name:"McDonald's french fries, medium",syns:16.0,note:"approximate medium portion"},
+  {name:"McDonald's french fries, large",syns:21.5,note:"approximate large portion"},
+  {name:"KFC Original Recipe chicken piece, each",syns:7.5,note:"approximate each"},
+  {name:"KFC Zinger Burger",syns:20.0,note:"approximate"},
+  {name:"Subway 6-inch Italian BMT on white",syns:18.0,note:"approximate"},
+  {name:"Subway 6-inch Chicken Tikka on white",syns:13.0,note:"approximate"},
+  {name:"Domino's Pepperoni Passion, 1 slice (medium)",syns:9.5,note:"per slice, approximate"},
+  {name:"Greggs sausage roll",syns:18.5,note:"each, approximate"},
+  {name:"Greggs steak bake",syns:19.5,note:"each, approximate"},
+
+  // MORE SYNS — Breakfast cereals extras
+  {name:"Cinnamon grahams, 25g",syns:5.0,note:"per 25g"},
+  {name:"Golden nuggets, 25g",syns:5.0,note:"per 25g"},
+  {name:"Krave chocolate, 25g",syns:5.5,note:"per 25g"},
+  {name:"Nestle Shreddies, 25g",syns:4.5,note:"per 25g"},
+  {name:"Nestle Shredded Wheat, 1.5 biscuits",syns:3.5,note:"per 1.5 biscuits"},
+  {name:"Special K, original, 25g",syns:4.5,note:"per 25g"},
+  {name:"Raisin bran/Sultana bran, 25g",syns:4.0,note:"per 25g"},
+
+  // MORE SYNS — Drinks extras
+  {name:"Lucozade Energy Original, 380ml bottle",syns:13.5,note:"per bottle"},
+  {name:"Lucozade Energy Original, 500ml bottle",syns:17.5,note:"per bottle"},
+  {name:"Ribena blackcurrant, undiluted, 50ml",syns:5.5,note:"per 50ml"},
+  {name:"Ribena light, undiluted, 50ml",syns:0.5,note:"per 50ml"},
+  {name:"Vimto, 330ml can",syns:5.5,note:"per can"},
+  {name:"Irn Bru, 330ml can",syns:7.0,note:"per can"},
+  {name:"J2O orange & passion fruit, 275ml bottle",syns:7.5,note:"per bottle"},
+  {name:"Fruit smoothie, 100ml",syns:2.5,note:"per 100ml — counts as Syns"},
+  {name:"Fruit juice, any type, 100ml",syns:1.0,note:"per 100ml — counts as Syns"},
+  {name:"Coconut water, unsweetened, 100ml",syns:1.5,note:"per 100ml"},
+  {name:"No added sugar cordial, diluted",syns:0,note:"Free Food",free:true},
+  {name:"Elderflower cordial, diluted as directed, 250ml",syns:3.0,note:"per 250ml"},
+  {name:"Barley water, diluted as directed, 250ml",syns:2.5,note:"per 250ml"},
+  {name:"Milk shake syrup, undiluted, 25ml",syns:1.5,note:"per 25ml"},
+  {name:"Rosehip syrup, undiluted, 50ml",syns:6.0,note:"per 50ml"},
+  {name:"Hot chocolate, made with skimmed milk, 200ml",syns:4.0,note:"per mug"},
+
+  // MORE SYNS — Fruit canned & dried
+  {name:"Apples, canned in juice, 100g",syns:1.5,note:"per 100g"},
+  {name:"Apricots, canned in juice, 100g",syns:4.5,note:"per 100g"},
+  {name:"Apricots, dried, 25g",syns:3.0,note:"per 25g"},
+  {name:"Blueberries, dried, 25g",syns:4.5,note:"per 25g"},
+  {name:"Cranberries, dried, 25g",syns:4.5,note:"per 25g"},
+  {name:"Dates, dried, weighed with stones, each",syns:0.5,note:"each"},
+  {name:"Dates, dried, weighed without stones, 25g",syns:3.5,note:"per 25g"},
+  {name:"Figs, dried, cooked without sugar, 100g",syns:6.5,note:"per 100g"},
+  {name:"Fruit salad, dried, 25g",syns:3.0,note:"per 25g"},
+  {name:"Goji berries, dried, 25g",syns:3.5,note:"per 25g"},
+  {name:"Mango, dried, 25g",syns:4.0,note:"per 25g"},
+  {name:"Peaches, dried, 25g",syns:3.5,note:"per 25g"},
+  {name:"Pears, dried, 25g",syns:3.0,note:"per 25g"},
+  {name:"Pineapple, dried, 25g",syns:4.5,note:"per 25g"},
+  {name:"Prunes, canned in juice, 100g",syns:4.0,note:"per 100g"},
+  {name:"Prunes, canned in syrup, 100g",syns:4.5,note:"per 100g"},
+  {name:"Raisins, 25g",syns:2.0,note:"per 25g"},
+  {name:"Sultanas, 25g",syns:3.5,note:"per 25g"},
+  {name:"Strawberries, canned in syrup, 100g",syns:1.5,note:"per 100g"},
+  {name:"Summer fruits, canned in syrup, 100g",syns:3.5,note:"per 100g"},
+
+  // MORE SYNS — Jams, spreads & marmalade
+  {name:"Marmalade, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Marmalade, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Jam, reduced sugar, 1 level tsp",syns:0.5,note:"per tsp"},
+  {name:"Jam, reduced sugar, 1 level tbsp",syns:1.0,note:"per tbsp"},
+  {name:"Lemon curd, 1 level tsp",syns:1.0,note:"per tsp"},
+  {name:"Lemon curd, 1 level tbsp",syns:2.5,note:"per tbsp"},
+  {name:"Mincemeat, 1 level tbsp",syns:2.0,note:"per tbsp"},
+  {name:"Mincemeat, 25g",syns:2.0,note:"per 25g"},
+
+  // MORE SYNS — Sauces (homemade/branded)
+  {name:"Bread sauce, made with whole milk, 100ml",syns:5.5,note:"per 100ml"},
+  {name:"Bread sauce, made with semi-skimmed milk, 100ml",syns:5.0,note:"per 100ml"},
+  {name:"Cheese sauce, made with whole milk, 100ml",syns:10.0,note:"per 100ml"},
+  {name:"Cheese sauce, made with semi-skimmed milk, 100ml",syns:9.0,note:"per 100ml"},
+  {name:"White sauce, savoury, made with whole milk, 100ml",syns:7.5,note:"per 100ml"},
+  {name:"White sauce, savoury, made with skimmed milk, 100ml",syns:5.5,note:"per 100ml"},
+  {name:"Gravy, standard, average, each",syns:7.0,note:"average serving"},
+  {name:"Pasta sauce, tomato based, can/jar/pouch, 100g",syns:3.5,note:"per 100g"},
+  {name:"Bolognese sauce, can/jar/pouch, 100g",syns:3.0,note:"per 100g"},
+  {name:"Tikka masala sauce, jar/pouch, 100g",syns:8.5,note:"per 100g"},
+  {name:"Korma sauce, jar/pouch, 100g",syns:8.5,note:"per 100g"},
+  {name:"Curry sauce, jar/pouch, 100g",syns:5.0,note:"per 100g"},
+  {name:"Stir fry sauce, can/jar/pouch, 100g",syns:6.5,note:"per 100g"},
+  {name:"Sweet & sour sauce, can/jar/pouch, 100g",syns:4.5,note:"per 100g"},
+  {name:"Dream Topping, Original, dried, per sachet",syns:12.0,note:"per sachet"},
+  {name:"Custard, canned/carton, standard, 100g",syns:5.0,note:"per 100g"},
+  {name:"Custard, low fat, 100g",syns:4.0,note:"per 100g"},
+  {name:"Custard, dairy free, 100g",syns:4.0,note:"per 100g"},
+  {name:"Custard powder, instant, standard, per sachet",syns:17.0,note:"per sachet"},
+
+  // MORE SYNS — Stuffing & stuffing mixes
+  {name:"Stuffing, balls, ready made, frozen, average each",syns:3.0,note:"each"},
+  {name:"Stuffing, ready made, chilled/frozen, 25g",syns:3.0,note:"per 25g"},
+
+  // MORE SYNS — Pastry
+  {name:"Pastry, shortcrust, 25g raw",syns:5.5,note:"per 25g raw"},
+  {name:"Pastry, flaky, 25g raw",syns:5.5,note:"per 25g raw"},
+  {name:"Pastry, puff, 25g raw",syns:5.0,note:"per 25g raw"},
+  {name:"Pastry, filo, 25g raw",syns:4.0,note:"per 25g raw"},
+  {name:"Pastry, filo sheets, each",syns:3.0,note:"each sheet"},
+  {name:"Pastry, sweet dessert, 25g raw",syns:5.5,note:"per 25g raw"},
+  {name:"Pastry, wholemeal, 25g raw",syns:5.5,note:"per 25g raw"},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+const DAILY_SYNS = 15;
+let currentTab = 'today';
+let currentMealType = 'Breakfast';
+let currentSynLabel = '';
+let currentSynVal = '';
+let lookupResults = [];
+let selectedLookup = null;
+let editWeightIdx = null;
+
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
+function fmtDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'});
+}
+function getData() {
+  try { return JSON.parse(localStorage.getItem('sw_days') || '{}'); } catch { return {}; }
+}
+function saveData(d) { localStorage.setItem('sw_days', JSON.stringify(d)); }
+function getWeights() {
+  try { return JSON.parse(localStorage.getItem('sw_weights') || '[]'); } catch { return []; }
+}
+function saveWeights(w) { localStorage.setItem('sw_weights', JSON.stringify(w)); }
+function getTodayData() {
+  const d = getData(); const k = getToday();
+  return d[k] || {syns:[], meals:[], heA:false, heB:false};
+}
+function setTodayData(td) {
+  const d = getData(); d[getToday()] = td; saveData(d);
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+function searchSyns(query) {
+  if (!query || query.length < 2) return [];
+  const q = query.toLowerCase();
+  const words = q.split(/\s+/).filter(w => w.length > 1);
+  const results = SYN_DB.filter(item => {
+    const n = item.name.toLowerCase();
+    return words.every(w => n.includes(w)) || n.includes(q);
+  });
+  results.sort((a, b) => {
+    const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+    const aStarts = an.startsWith(q) ? 0 : 1;
+    const bStarts = bn.startsWith(q) ? 0 : 1;
+    if (aStarts !== bStarts) return aStarts - bStarts;
+    return an.length - bn.length;
+  });
+  return results.slice(0, 8);
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  document.getElementById('headerDate').textContent = fmtDate(getToday());
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['today','history','weight'][i] === currentTab);
+  });
+  document.getElementById('tab-today').style.display = currentTab === 'today' ? '' : 'none';
+  document.getElementById('tab-history').style.display = currentTab === 'history' ? '' : 'none';
+  document.getElementById('tab-weight').style.display = currentTab === 'weight' ? '' : 'none';
+  if (currentTab === 'today') renderToday();
+  if (currentTab === 'history') renderHistory();
+  if (currentTab === 'weight') renderWeight();
+}
+
+function renderToday() {
+  const td = getTodayData();
+  const totalSyns = td.syns.reduce((a,s) => a + Number(s.value), 0);
+  const remaining = DAILY_SYNS - totalSyns;
+  const pct = Math.min(100, (totalSyns / DAILY_SYNS) * 100);
+  const synColor = remaining < 0 ? '#ef4444' : remaining <= 1 ? '#f97316' : '#22c55e';
+  const barBg = remaining < 0 ? '#ef4444' : 'linear-gradient(90deg, #c85a2e, #f5a97a)';
+
+  let synLog = '';
+  if (td.syns.length > 0) {
+    synLog = `<div class="log-list">` + td.syns.map((s,i) => `
+      <div class="log-item">
+        <span class="log-item-name">${s.label}<span class="log-item-time">${s.time}</span></span>
+        <div class="log-item-right">
+          <span class="log-syn-val">${Number(s.value).toFixed(1)}</span>
+          <button class="remove-btn" onclick="removeSyn(${i})">✕</button>
+        </div>
+      </div>`).join('') + `</div>`;
+  }
+
+  let resultsHtml = '';
+  if (lookupResults.length > 0) {
+    resultsHtml = `<div class="search-results">` + lookupResults.map((r, idx) => `
+      <div class="search-result-item" onclick="selectLookup(${idx})">
+        <div>
+          <div class="search-result-name">${r.name}</div>
+          <div class="search-result-note">${r.note}</div>
+        </div>
+        ${r.free ? `<span class="search-result-free">Free!</span>` : `<span class="search-result-syns">${r.syns} Syns</span>`}
+      </div>`).join('') + `</div>`;
+  } else if (currentSynLabel.length >= 2 && lookupResults.length === 0) {
+    resultsHtml = `<div class="search-results"><div class="no-results">No matches found — enter Syns manually below</div></div>`;
+  }
+
+  let selectedHtml = '';
+  if (selectedLookup) {
+    const r = selectedLookup;
+    if (r.free) {
+      selectedHtml = `<div class="lookup-result free">
+        <div class="lookup-header">
+          <span class="lookup-food">${r.name}</span>
+          <span class="lookup-value" style="color:#16a34a">Free!</span>
+        </div>
+        <div class="lookup-note">${r.note} <span class="badge badge-book">From your book</span></div>
+        <button class="btn btn-green" onclick="addAsFreeFood()" style="margin-top:6px;padding:7px 14px;font-size:13px">Log as Free Food</button>
+      </div>`;
+    } else {
+      selectedHtml = `<div class="lookup-result syns">
+        <div class="lookup-header">
+          <span class="lookup-food">${r.name}</span>
+          <span class="lookup-value" style="color:#c85a2e">${r.syns} Syns</span>
+        </div>
+        <div class="lookup-note">${r.note} <span class="badge badge-book">From your book</span></div>
+        <div class="adjust-row">
+          <span>Adjust:</span>
+          <input type="number" step="0.5" id="synValInput" value="${r.syns}" style="width:80px;padding:6px 10px" oninput="currentSynVal=this.value">
+          <button class="btn" onclick="addSyn()" style="padding:7px 14px;font-size:13px">Add</button>
+        </div>
+      </div>`;
+    }
+  }
+
+  let manualHtml = '';
+  if (!selectedLookup) {
+    manualHtml = `<div style="margin-top:10px">
+      <div style="font-size:11px;color:#bba898;margin-bottom:6px">Or enter manually:</div>
+      <div class="input-row">
+        <input type="number" step="0.5" placeholder="Syns" id="manualSynVal" oninput="currentSynVal=this.value" style="flex:1">
+        <button class="btn" onclick="addSynManual()">Add</button>
+      </div>
+    </div>`;
+  }
+
+  let mealLog = '';
+  if (td.meals.length > 0) {
+    const types = ['Breakfast','Lunch','Dinner','Snack','Free Food'];
+    mealLog = types.map(type => {
+      const group = td.meals.map((m,i) => ({...m,i})).filter(m => m.type === type);
+      if (!group.length) return '';
+      return `<div class="meal-section">
+        <div class="section-label ${type==='Free Food'?'green':'orange'}">${type}</div>
+        ${group.map(m => `<div class="log-item">
+          <span class="log-item-name">${m.desc}<span class="log-item-time">${m.time}</span></span>
+          <button class="remove-btn" onclick="removeMeal(${m.i})">✕</button>
+        </div>`).join('')}
+      </div>`;
+    }).join('');
+    mealLog = `<div style="margin-top:14px">${mealLog}</div>`;
+  }
+
+  document.getElementById('tab-today').innerHTML = `
+    <div class="card">
+      <div class="syn-count">
+        <span class="card-label" style="margin-bottom:0">Daily Syns</span>
+        <span class="syn-number" style="color:${synColor}">${totalSyns.toFixed(1)} / ${DAILY_SYNS}</span>
+      </div>
+      <div class="syn-bar-bg"><div class="syn-bar-fill" style="width:${pct}%;background:${barBg}"></div></div>
+      <div class="syn-remaining" style="color:${synColor}">
+        ${remaining < 0 ? Math.abs(remaining).toFixed(1)+' Syns over' : remaining.toFixed(1)+' Syns remaining'}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Add Syns</div>
+      <div class="card-sublabel">Search your Slimming World book data</div>
+      <div class="input-row">
+        <input type="text" id="synSearchInput" placeholder="e.g. Kit Kat, red wine, crisps..." value="${currentSynLabel}"
+          oninput="handleSearch(this.value)" autocomplete="off" style="flex:1">
+        ${selectedLookup ? `<button class="btn btn-grey" onclick="clearLookup()" style="padding:10px 12px;font-size:12px">Clear</button>` : ''}
+      </div>
+      ${resultsHtml}
+      ${selectedHtml}
+      ${manualHtml}
+      ${synLog}
+    </div>
+
+    <div class="card">
+      <div class="card-label">Healthy Extras</div>
+      <div class="he-row">
+        <button class="he-btn ${td.heA?'active':''}" onclick="toggleHE('heA')">
+          <div class="he-icon">${td.heA?'✅':'⬜'}</div>
+          <div class="he-label">HE A</div>
+          <div class="he-desc">Calcium (milk, cheese)</div>
+        </button>
+        <button class="he-btn ${td.heB?'active':''}" onclick="toggleHE('heB')">
+          <div class="he-icon">${td.heB?'✅':'⬜'}</div>
+          <div class="he-label">HE B</div>
+          <div class="he-desc">Fibre (bread, cereal)</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Food Diary</div>
+      <div class="meal-types">
+        ${['Breakfast','Lunch','Dinner','Snack'].map(t => `
+          <button class="meal-type-btn ${currentMealType===t?'active':''}" onclick="setMealType('${t}')">${t}</button>
+        `).join('')}
+      </div>
+      <div class="input-row">
+        <input type="text" id="mealInput" placeholder="What did you eat?" style="flex:1"
+          onkeydown="if(event.key==='Enter')addMeal()">
+        <button class="btn" onclick="addMeal()">Add</button>
+      </div>
+      ${mealLog}
+    </div>
+  `;
+
+  setTimeout(() => {
+    const si = document.getElementById('synSearchInput');
+    if (si && document.activeElement !== si) {
+      // keep focus where it was
+    }
+  }, 0);
+}
+
+function renderHistory() {
+  const data = getData();
+  const today = getToday();
+  const days = Object.entries(data)
+    .filter(([k]) => k !== today)
+    .sort((a,b) => b[0].localeCompare(a[0]))
+    .slice(0, 14);
+
+  if (days.length === 0) {
+    document.getElementById('tab-history').innerHTML = `<div class="empty-state">No history yet. Start logging today!</div>`;
+    return;
+  }
+
+  document.getElementById('tab-history').innerHTML = days.map(([date, d]) => {
+    const syns = (d.syns||[]).reduce((a,s) => a + Number(s.value), 0);
+    const over = syns > DAILY_SYNS;
+    const meals = (d.meals||[]).map(m => m.desc).slice(0,4).join(', ') + ((d.meals||[]).length > 4 ? '...' : '');
+    return `<div class="history-card ${over?'over':''}">
+      <div class="history-header">
+        <span class="history-date">${fmtDate(date)}</span>
+        <span class="history-syns" style="color:${over?'#ef4444':'#22c55e'}">${syns.toFixed(1)} / ${DAILY_SYNS} Syns</span>
+      </div>
+      ${meals ? `<div class="history-meals">${meals}</div>` : ''}
+      <div class="history-tags">
+        ${d.heA ? `<span class="he-tag">HE A ✓</span>` : ''}
+        ${d.heB ? `<span class="he-tag">HE B ✓</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeight() {
+  const weights = getWeights();
+  const weightLoss = weights.length >= 2 ? (weights[0].weight - weights[weights.length-1].weight).toFixed(1) : null;
+  const banner = (weightLoss !== null) ? `
+    <div class="weight-banner">
+      <div class="weight-banner-label">Total Change</div>
+      <div class="weight-banner-num">${weightLoss > 0 ? '-' : '+'}${Math.abs(weightLoss)}</div>
+      <div class="weight-banner-sub">from ${weights[0].weight} to ${weights[weights.length-1].weight}</div>
+    </div>` : '';
+
+  const today = getToday();
+  const logHtml = weights.length > 0 ? `
+    <div class="card">
+      <div class="card-label">Weight Log</div>
+      ${[...weights].reverse().map((w, ri) => {
+        const i = weights.length - 1 - ri;
+        const prev = weights[i-1];
+        const diff = prev ? (w.weight - prev.weight).toFixed(1) : null;
+        return `<div class="weight-log-item">
+          <div>
+            <div class="weight-date">${fmtDate(w.date)}</div>
+            ${diff !== null ? `<div class="weight-diff" style="color:${Number(diff)<=0?'#22c55e':'#ef4444'}">${Number(diff)<=0?'▼ '+Math.abs(diff):'▲ '+diff} from last</div>` : ''}
+          </div>
+          <div class="weight-right">
+            <span class="weight-val">${w.weight}</span>
+            <button class="remove-btn" onclick="editWeight(${i})" style="color:#c85a2e;font-size:14px">✏️</button>
+            <button class="remove-btn" onclick="deleteWeight(${i})">✕</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  const editLabel = editWeightIdx !== null ? 'Edit Weight' : 'Log Weight';
+  const editVals = editWeightIdx !== null ? `value="${weights[editWeightIdx].weight}"` : '';
+  const dateVal = editWeightIdx !== null ? weights[editWeightIdx].date : today;
+
+  document.getElementById('tab-weight').innerHTML = `
+    ${banner}
+    <div class="card">
+      <div class="card-label">${editLabel}</div>
+      <input type="date" id="weightDate" value="${dateVal}" style="margin-bottom:8px">
+      <div class="input-row">
+        <input type="number" step="0.1" placeholder="e.g. 11.4 (stone)" id="weightVal" ${editVals} style="flex:1">
+        <button class="btn" onclick="saveWeight()">${editWeightIdx !== null ? 'Save' : 'Log'}</button>
+      </div>
+      ${editWeightIdx !== null ? `<button class="btn btn-grey btn-full" onclick="cancelWeightEdit()">Cancel</button>` : ''}
+    </div>
+    ${logHtml}
+  `;
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function switchTab(t) { currentTab = t; render(); }
+
+function handleSearch(val) {
+  currentSynLabel = val;
+  selectedLookup = null;
+  lookupResults = val.length >= 2 ? searchSyns(val) : [];
+  renderToday();
+  // restore focus
+  const el = document.getElementById('synSearchInput');
+  if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+}
+
+function selectLookup(idx) {
+  selectedLookup = lookupResults[idx];
+  currentSynVal = selectedLookup.syns > 0 ? String(selectedLookup.syns) : '';
+  lookupResults = [];
+  renderToday();
+}
+
+function clearLookup() {
+  selectedLookup = null;
+  currentSynLabel = '';
+  currentSynVal = '';
+  lookupResults = [];
+  renderToday();
+  const el = document.getElementById('synSearchInput');
+  if (el) el.focus();
+}
+
+function addSyn() {
+  const input = document.getElementById('synValInput');
+  const val = parseFloat(input ? input.value : currentSynVal);
+  if (isNaN(val) || val < 0 || !currentSynLabel) return;
+  const td = getTodayData();
+  td.syns.push({ label: currentSynLabel, value: val, time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) });
+  setTodayData(td);
+  currentSynLabel = ''; currentSynVal = ''; selectedLookup = null; lookupResults = [];
+  renderToday();
+}
+
+function addSynManual() {
+  const input = document.getElementById('manualSynVal');
+  const val = parseFloat(input ? input.value : currentSynVal);
+  if (isNaN(val) || val < 0 || !currentSynLabel) return;
+  const td = getTodayData();
+  td.syns.push({ label: currentSynLabel, value: val, time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) });
+  setTodayData(td);
+  currentSynLabel = ''; currentSynVal = ''; selectedLookup = null; lookupResults = [];
+  renderToday();
+}
+
+function addAsFreeFood() {
+  const td = getTodayData();
+  td.meals.push({ type: 'Free Food', desc: currentSynLabel, time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) });
+  setTodayData(td);
+  currentSynLabel = ''; currentSynVal = ''; selectedLookup = null; lookupResults = [];
+  renderToday();
+}
+
+function removeSyn(i) {
+  const td = getTodayData();
+  td.syns.splice(i, 1);
+  setTodayData(td);
+  renderToday();
+}
+
+function setMealType(t) { currentMealType = t; renderToday(); }
+
+function addMeal() {
+  const input = document.getElementById('mealInput');
+  if (!input || !input.value.trim()) return;
+  const td = getTodayData();
+  td.meals.push({ type: currentMealType, desc: input.value.trim(), time: new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) });
+  setTodayData(td);
+  renderToday();
+}
+
+function removeMeal(i) {
+  const td = getTodayData();
+  td.meals.splice(i, 1);
+  setTodayData(td);
+  renderToday();
+}
+
+function toggleHE(which) {
+  const td = getTodayData();
+  td[which] = !td[which];
+  setTodayData(td);
+  renderToday();
+}
+
+function saveWeight() {
+  const val = parseFloat(document.getElementById('weightVal').value);
+  const date = document.getElementById('weightDate').value;
+  if (isNaN(val) || !date) return;
+  let weights = getWeights();
+  if (editWeightIdx !== null) {
+    weights[editWeightIdx] = { date, weight: val };
+    editWeightIdx = null;
+  } else {
+    weights.push({ date, weight: val });
+    weights.sort((a,b) => a.date.localeCompare(b.date));
+  }
+  saveWeights(weights);
+  renderWeight();
+}
+
+function editWeight(i) { editWeightIdx = i; renderWeight(); }
+function cancelWeightEdit() { editWeightIdx = null; renderWeight(); }
+function deleteWeight(i) {
+  let weights = getWeights();
+  weights.splice(i, 1);
+  saveWeights(weights);
+  renderWeight();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>
